@@ -16,7 +16,7 @@ target_include_directories(${PROJECT_NAME}
     )
 
 # add the PowerVR libary
-find_library(%{PVR_SHELL}
+find_library(PVR_SHELL
                 PVRShell
                 ${CMAKE_CURRENT_LIST_DIR}/lib)
 
