@@ -16,3 +16,5 @@ target_include_directories(${PROJECT_NAME}
                                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                           )
 # this is the host project using powerVR SDK for testing the GPGPU library
+
+# build the examples one by one
