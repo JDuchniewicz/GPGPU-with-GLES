@@ -1,5 +1,11 @@
 #pragma once
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <EGL/egl.h>
+#define EGL_EGLEXT_PROTOTYPES
+#include <EGL/eglext.h>
 #include <GLES2/gl2.h> // what about GLES3?
 
 #define GPGPU_API // just a marker

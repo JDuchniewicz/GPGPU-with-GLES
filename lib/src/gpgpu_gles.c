@@ -2,11 +2,41 @@
 
 GLHelper g_helper;
 
+#define ERR(m) { \
+    ret = -1; \
+    fprintf(stderr, "ERROR in line %d: %s\n", __LINE__, m); \
+    goto bail; \
+}
+
+// TODO: map GL errors?
+
 int GPGPU_API gpgpu_init()
 {
     int ret = 0;
-    int major, minor;
+    int major, minor, num_devices;
+    EGLDeviceEXT* devices = NULL;
+    // query the devices available (first call to allocate enough memory)
+    if (!eglQueryDevicesEXT(0, NULL, &num_devices) || num_devices < 1)
+        ERR("Not enough or no devices available");
+
+    devices = (EGLDeviceEXT*) malloc(sizeof(EGLDeviceEXT) * num_devices);
+    if (!devices)
+        ERR("Could not allocate memory");
+
+    if (!eglQueryDevicesEXT(num_devices, devices, &num_devices) || num_devices < 1)
+        ERR("Could not get all devices after allocating");
+
+    // enumerate the devices
+    for (int i = 0; i < num_devices; ++i)
+    {
+        const char* dev = eglQueryDeviceStringEXT(devices[i], EGL_DRM_DEVICE_FILE_EXT);
+        printf("Device 0x%.8lx: %s\n", (unsigned long)devices[i], dev ? dev : "NULL");
+    }
+
     // create the headless context
+    g_helper.display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[0], NULL);
+    if (!devices)
+        ERR("Could not get EXT display");
     g_helper.display = eglGetDisplay(0); // apparently this does not work with headless
 
     if (g_helper.display == EGL_NO_DISPLAY)
@@ -15,15 +45,16 @@ int GPGPU_API gpgpu_init()
     }
 
     if (eglInitialize(g_helper.display, &major, &minor) == 0)
-    {
-        return -1;
-    }
+        ERR("Could not initialize display");
 
     if (eglBindAPI(EGL_OPENGL_ES_API) == 0)
-    {
-        return -1;
-    }
-    return 0;
+        ERR("Could not bind the API");
+
+    return ret;
+
+bail:
+    // release all resources
+    return ret;
 }
 
 int GPGPU_API gpgpu_deinit()
