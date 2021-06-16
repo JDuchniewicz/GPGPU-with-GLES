@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../include/gpgpu_gles.h" // TODO: change
+#include "gpgpu_gles.h"
 
 int main()
 {
@@ -7,5 +7,6 @@ int main()
     {
         printf("Could not initialize the API\n");
     }
+    gpgpu_deinit();
     return 0;
 }

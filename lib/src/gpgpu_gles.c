@@ -2,7 +2,7 @@
 
 GLHelper g_helper;
 
-static int GPGPU_API gpgpu_init()
+int GPGPU_API gpgpu_init()
 {
     int ret = 0;
     int major, minor;
@@ -26,25 +26,25 @@ static int GPGPU_API gpgpu_init()
     return 0;
 }
 
-static int GPGPU_API gpgpu_deinit()
+int GPGPU_API gpgpu_deinit()
 {
 
     return 0;
 }
 
-static int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
+int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
 {
 
     return 0;
 }
 
-static int GPGPU_API gpgpu_firConvolution(int* data, int len, int* kernel, int size, int* res)
+int GPGPU_API gpgpu_firConvolution(int* data, int len, int* kernel, int size, int* res)
 {
 
     return 0;
 }
 
-static int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
+int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
 {
 
     return 0;

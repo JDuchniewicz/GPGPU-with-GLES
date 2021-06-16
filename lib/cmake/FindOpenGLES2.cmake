@@ -20,7 +20,8 @@ find_package_handle_standard_args(OpenGLES2
 
 if (NOT TARGET OpenGLES2::OpenGLES2)
     add_library(OpenGLES2::OpenGLES2 INTERFACE IMPORTED)
-    set_target_properties(IMPORTED_LOCATION ${OPENGLES2_LIBRARY}) # is it needed though?
+    set_target_properties(OpenGLES2::OpenGLES2 PROPERTIES
+        IMPORTED_LOCATION ${OPENGLES2_LIBRARY}) # is it needed though?
 endif()
 
 mark_as_advanced(OPENGLES2_LIBRARY)

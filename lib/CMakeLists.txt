@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(GPGPU_GLES VERSION 1.0.0 LANGUAGES C)
 
 # Add the custom modules to CMake search path
-#list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 ##################################
 # Find system dependencies
@@ -16,6 +16,9 @@ find_package(OpenGLES2 REQUIRED)
 add_library(GPGPU_GLES STATIC
     ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_gles.c
 )
+
+# add alias to use it as GPGPU_GLES::GPGPU_GLES
+add_library(GPGPU_GLES::GPGPU_GLES ALIAS GPGPU_GLES)
 
 target_include_directories(GPGPU_GLES
     PUBLIC
@@ -31,9 +34,9 @@ target_link_libraries(GPGPU_GLES
 # Installation instructions
 
 include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/GPUGPU_GLES)
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/GPGPU_GLES)
 
-install(TARGETS GPUGPU_GLES
+install(TARGETS GPGPU_GLES
     EXPORT GPGPU_GLES_TARGETS
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
