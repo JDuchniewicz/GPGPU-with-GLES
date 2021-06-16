@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 project(GPGPU_GLES VERSION 1.0.0 LANGUAGES C)
 
+# Add the custom modules to CMake search path
+#list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+
+##################################
+# Find system dependencies
+
 find_package(OpenGL REQUIRED COMPONENTS EGL)
 find_package(OpenGLES2 REQUIRED)
 
@@ -19,7 +25,7 @@ target_include_directories(GPGPU_GLES
 
 target_link_libraries(GPGPU_GLES
     PRIVATE
-        OpenGL::EGL OpenGLES2
+    OpenGL::EGL OpenGLES2::OpenGLES2
 )
 ###################################
 # Installation instructions
@@ -35,7 +41,7 @@ install(TARGETS GPUGPU_GLES
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-# Export the targets to a script
+# Export the targets to a script (This script is then used by CMakeConfig file)
 install(EXPORT GPGPU_GLES_TARGETS
     FILE
         GPGPU_GLESTargets.cmake
@@ -43,6 +49,28 @@ install(EXPORT GPGPU_GLES_TARGETS
         GPGPU_GLES::
     DESTINATION
         ${INSTALL_CONFIGDIR}
+)
+
+# Create a ConfigVersion.cmake
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/GPGPU_GLESConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+configure_package_config_file(
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/GPGPU_GLESConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/GPGPU_GLESConfig.cmake
+    INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+# Install the config, configversion and custom find modules
+install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/FindOpenGLES2.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/GPGPU_GLESConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/GPGPU_GLESConfigVersion.cmake
+    DESTINATION ${INSTALL_CONFIGDIR}
 )
 
 ##################################
@@ -59,5 +87,5 @@ export(PACKAGE GPGPU_GLES)
 
 ###############################
 # build the examples one by one
-add_subdirectory(examples/)
+add_subdirectory(examples)
 

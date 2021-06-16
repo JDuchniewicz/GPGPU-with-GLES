@@ -1,0 +1,13 @@
+get_filename_component(GPGPU_GLES_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH ${GPGPU_GLES_CMAKE_DIR})
+find_dependency(OpenGLES2)
+find_dependency(OpenGL)
+
+if (NOT TARGET GPGPU_GLES::GPGPU_GLES)
+    include("${GPGPU_GLES_CMAKE_DIR}/GPGPU_GLESTargets.cmake")
+endif()
+
+set(GPGU_GLES_LIBRARIES GPGPU_GLES::GPGPU_GLES)
+
