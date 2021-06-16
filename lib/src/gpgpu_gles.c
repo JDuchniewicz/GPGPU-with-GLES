@@ -7,7 +7,7 @@ static int GPGPU_API gpgpu_init()
     int ret = 0;
     int major, minor;
     // create the headless context
-    g_helper.display = eglGetDisplay(0);
+    g_helper.display = eglGetDisplay(0); // apparently this does not work with headless
 
     if (g_helper.display == EGL_NO_DISPLAY)
     {

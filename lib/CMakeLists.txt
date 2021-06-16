@@ -1,20 +1,63 @@
-cmake_minimum_required(VERSION 3.5)
-project(gpgpu_gles VERSION 1.0.0 LANGUAGES C)
+cmake_minimum_required(VERSION 3.13)
+project(GPGPU_GLES VERSION 1.0.0 LANGUAGES C)
 
+find_package(OpenGL REQUIRED COMPONENTS EGL)
+find_package(OpenGLES2 REQUIRED)
 
-set(SRCS
-        ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_gles.c
-    )
+##################################
+# Create target and set properties
 
-add_library(${PROJECT_NAME}
-                ${SRCS})
+add_library(GPGPU_GLES STATIC
+    ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_gles.c
+)
 
-# includes
-target_include_directories(${PROJECT_NAME}
-                            PUBLIC
-                                $<INSTALL_INTERFACE:include>
-                                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                          )
-# this is the host project using powerVR SDK for testing the GPGPU library
+target_include_directories(GPGPU_GLES
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
+target_link_libraries(GPGPU_GLES
+    PRIVATE
+        OpenGL::EGL OpenGLES2
+)
+###################################
+# Installation instructions
+
+include(GNUInstallDirs)
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/GPUGPU_GLES)
+
+install(TARGETS GPUGPU_GLES
+    EXPORT GPGPU_GLES_TARGETS
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# Export the targets to a script
+install(EXPORT GPGPU_GLES_TARGETS
+    FILE
+        GPGPU_GLESTargets.cmake
+    NAMESPACE
+        GPGPU_GLES::
+    DESTINATION
+        ${INSTALL_CONFIGDIR}
+)
+
+##################################
+# Exporting from the build tree
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindOpenGLES2.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/FindOpenGLES2.cmake
+    COPYONLY)
+
+export(EXPORT GPGPU_GLES_TARGETS
+    FILE ${CMAKE_BINARY_DIR}/GPGPU_GLESTargets.cmake
+    NAMESPACE GPGPU_GLES::)
+
+export(PACKAGE GPGPU_GLES)
+
+###############################
 # build the examples one by one
+add_subdirectory(examples/)
+
