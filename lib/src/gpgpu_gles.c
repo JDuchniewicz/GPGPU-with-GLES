@@ -51,10 +51,10 @@ int GPGPU_API gpgpu_init()
     }
 
     // create the headless context
-    g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[0], NULL);
-    if (!devices)
+    g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[1], NULL);
+    printf("DISPLAY: %lu\n", (unsigned long)g_helper.display);
+    if (!g_helper.display)
         ERR("Could not get EXT display");
-    g_helper.display = eglGetDisplay(0); // apparently this does not work with headless
 
     if (g_helper.display == EGL_NO_DISPLAY)
     {
