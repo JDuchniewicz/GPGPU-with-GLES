@@ -1,6 +1,9 @@
 #include "gpgpu_gles.h"
 
 GLHelper g_helper;
+PFNEGLQUERYDEVICESEXTPROC _eglQueryDevicesEXT = NULL;
+PFNEGLQUERYDEVICESTRINGEXTPROC _eglQueryDeviceStringEXT = NULL;
+PFNEGLGETPLATFORMDISPLAYEXTPROC _eglGetPlatformDisplayEXT = NULL;
 
 #define ERR(m) { \
     ret = -1; \
@@ -15,26 +18,40 @@ int GPGPU_API gpgpu_init()
     int ret = 0;
     int major, minor, num_devices;
     EGLDeviceEXT* devices = NULL;
+
+    /// load the extensions (hidden symbols???)
+    _eglQueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC) eglGetProcAddress("eglQueryDevicesEXT");
+    if (!_eglQueryDevicesEXT)
+        ERR("Could not import eglQueryDevicesEXT()");
+
+    _eglQueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC) eglGetProcAddress("eglQueryDeviceStringEXT");
+    if (!_eglQueryDeviceStringEXT)
+        ERR("Could not import eglQueryDeviceStringEXT()");
+
+    _eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+    if (!_eglGetPlatformDisplayEXT)
+        ERR("Could not import eglGetPlatformDisplayEXT()");
+
     // query the devices available (first call to allocate enough memory)
-    if (!eglQueryDevicesEXT(0, NULL, &num_devices) || num_devices < 1)
+    if (!_eglQueryDevicesEXT(0, NULL, &num_devices) || num_devices < 1)
         ERR("Not enough or no devices available");
 
     devices = (EGLDeviceEXT*) malloc(sizeof(EGLDeviceEXT) * num_devices);
     if (!devices)
         ERR("Could not allocate memory");
 
-    if (!eglQueryDevicesEXT(num_devices, devices, &num_devices) || num_devices < 1)
+    if (!_eglQueryDevicesEXT(num_devices, devices, &num_devices) || num_devices < 1)
         ERR("Could not get all devices after allocating");
 
     // enumerate the devices
     for (int i = 0; i < num_devices; ++i)
     {
-        const char* dev = eglQueryDeviceStringEXT(devices[i], EGL_DRM_DEVICE_FILE_EXT);
+        const char* dev = _eglQueryDeviceStringEXT(devices[i], EGL_DRM_DEVICE_FILE_EXT);
         printf("Device 0x%.8lx: %s\n", (unsigned long)devices[i], dev ? dev : "NULL");
     }
 
     // create the headless context
-    g_helper.display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[0], NULL);
+    g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[0], NULL);
     if (!devices)
         ERR("Could not get EXT display");
     g_helper.display = eglGetDisplay(0); // apparently this does not work with headless
