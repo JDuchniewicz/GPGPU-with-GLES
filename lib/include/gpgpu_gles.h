@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <fcntl.h>
+
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>

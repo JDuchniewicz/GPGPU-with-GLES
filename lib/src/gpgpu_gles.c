@@ -51,8 +51,11 @@ int GPGPU_API gpgpu_init()
     }
 
     // create the headless context
-    g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[1], NULL);
+    int fd = open("/dev/dri/card0", O_RDWR);
+    int attr[] = { EGL_DRM_MASTER_FD_EXT, fd };
+    g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[1], attr);
     printf("DISPLAY: %lu\n", (unsigned long)g_helper.display);
+    printf("EGL ERROR %d\n", eglGetError());
     if (!g_helper.display)
         ERR("Could not get EXT display");
 
