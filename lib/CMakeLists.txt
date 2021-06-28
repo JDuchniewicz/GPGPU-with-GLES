@@ -96,4 +96,3 @@ export(PACKAGE GPGPU_GLES)
 ###############################
 # build the examples one by one
 add_subdirectory(examples)
-

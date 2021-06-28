@@ -19,7 +19,9 @@ find_package_handle_standard_args(EGL
     EGL_LIBRARY)
 
 if (NOT TARGET EGL::EGL)
-    add_library(EGL::EGL INTERFACE IMPORTED)
+    add_library(EGL::EGL UNKNOWN IMPORTED)
+    set_target_properties(EGL::EGL PROPERTIES
+        IMPORTED_LOCATION "${EGL_LIBRARY}")
 endif()
 
 mark_as_advanced(EGL_LIBRARY)
