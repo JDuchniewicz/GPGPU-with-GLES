@@ -3,7 +3,7 @@ include(CMakeFindDependencyMacro)
 
 list(APPEND CMAKE_MODULE_PATH ${GPGPU_GLES_CMAKE_DIR})
 find_dependency(OpenGLES2)
-find_dependency(OpenGL)
+find_dependency(EGL)
 
 if (NOT TARGET GPGPU_GLES::GPGPU_GLES)
     include("${GPGPU_GLES_CMAKE_DIR}/GPGPU_GLESTargets.cmake")

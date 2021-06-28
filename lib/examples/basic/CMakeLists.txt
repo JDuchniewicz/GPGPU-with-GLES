@@ -8,4 +8,4 @@ find_package(GPGPU_GLES REQUIRED)
 add_executable(GPGPUGLESBasic
         ${CMAKE_CURRENT_LIST_DIR}/basic.c)
 
-target_link_libraries(GPGPUGLESBasic PUBLIC GPGPU_GLES::GPGPU_GLES)
+target_link_libraries(GPGPUGLESBasic PRIVATE GPGPU_GLES::GPGPU_GLES)

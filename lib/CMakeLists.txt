@@ -7,7 +7,8 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 ##################################
 # Find system dependencies
 
-find_package(OpenGL REQUIRED COMPONENTS EGL)
+#find_package(OpenGL REQUIRED COMPONENTS EGL)
+find_package(EGL REQUIRED)
 find_package(OpenGLES2 REQUIRED)
 
 ##################################
@@ -28,7 +29,7 @@ target_include_directories(GPGPU_GLES
 
 target_link_libraries(GPGPU_GLES
     PRIVATE
-    OpenGL::EGL OpenGLES2::OpenGLES2
+    EGL::EGL OpenGLES2::OpenGLES2
 )
 ###################################
 # Installation instructions
@@ -71,6 +72,7 @@ configure_package_config_file(
 # Install the config, configversion and custom find modules
 install(FILES
     ${CMAKE_CURRENT_LIST_DIR}/cmake/FindOpenGLES2.cmake
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/FindEGL.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/GPGPU_GLESConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/GPGPU_GLESConfigVersion.cmake
     DESTINATION ${INSTALL_CONFIGDIR}
@@ -80,6 +82,9 @@ install(FILES
 # Exporting from the build tree
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindOpenGLES2.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/FindOpenGLES2.cmake
+    COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindEGL.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/FindEGL.cmake
     COPYONLY)
 
 export(EXPORT GPGPU_GLES_TARGETS
