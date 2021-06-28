@@ -25,6 +25,7 @@ target_include_directories(GPGPU_GLES
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${EGL_INCLUDE_DIR}> # need it only once
 )
 
 target_link_libraries(GPGPU_GLES
