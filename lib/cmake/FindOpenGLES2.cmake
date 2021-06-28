@@ -3,7 +3,7 @@
 # Finds the OpenGLES2 library and its dependencies
 #
 # If GLES2_INCLUDE_DIR is not set, sets it to the default directory on the Imagination BBB image:
-#       /opt/Native_SDK/include/GLES2
+#       /opt/Native_SDK/include
 #
 # This will define the following variables
 #       OpenGLES2_FOUND
@@ -17,7 +17,7 @@ find_library(OPENGLES2_LIBRARY NAMES
 )
 
 if (NOT DEFINED GLES2_INCLUDE_DIR)
-    set(GLES2_INCLUDE_DIR "/opt/Native_SDK/include/GLES2")
+    set(GLES2_INCLUDE_DIR "/opt/Native_SDK/include")
 endif()
 
 find_package(PackageHandleStandardArgs REQUIRED)

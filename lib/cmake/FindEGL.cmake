@@ -3,7 +3,7 @@
 # Finds the EGL library and its dependencies
 #
 # If EGL_INCLUDE_DIR is not set, sets it to the default directory on the Imagination BBB image:
-#       /opt/Native_SDK/include/EGL
+#       /opt/Native_SDK/include
 #
 # This will define the following variables
 #       EGL_FOUND
@@ -17,7 +17,7 @@ find_library(EGL_LIBRARY NAMES
 )
 
 if (NOT DEFINED EGL_INCLUDE_DIR)
-    set(EGL_INCLUDE_DIR "/opt/Native_SDK/include/EGL")
+    set(EGL_INCLUDE_DIR "/opt/Native_SDK/include")
 endif()
 
 find_package(PackageHandleStandardArgs REQUIRED)
