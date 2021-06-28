@@ -19,50 +19,48 @@ int GPGPU_API gpgpu_init()
     int major, minor, num_devices;
     EGLDeviceEXT* devices = NULL;
 
-    /// load the extensions (hidden symbols???)
-    _eglQueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC) eglGetProcAddress("eglQueryDevicesEXT");
-    if (!_eglQueryDevicesEXT)
-        ERR("Could not import eglQueryDevicesEXT()");
+    ///// load the extensions (hidden symbols???)
+    //_eglQueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC) eglGetProcAddress("eglQueryDevicesEXT");
+    //if (!_eglQueryDevicesEXT)
+    //    ERR("Could not import eglQueryDevicesEXT()");
 
-    _eglQueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC) eglGetProcAddress("eglQueryDeviceStringEXT");
-    if (!_eglQueryDeviceStringEXT)
-        ERR("Could not import eglQueryDeviceStringEXT()");
+    //_eglQueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC) eglGetProcAddress("eglQueryDeviceStringEXT");
+    //if (!_eglQueryDeviceStringEXT)
+    //    ERR("Could not import eglQueryDeviceStringEXT()");
 
-    _eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
-    if (!_eglGetPlatformDisplayEXT)
-        ERR("Could not import eglGetPlatformDisplayEXT()");
+    //_eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+    //if (!_eglGetPlatformDisplayEXT)
+    //    ERR("Could not import eglGetPlatformDisplayEXT()");
 
-    // query the devices available (first call to allocate enough memory)
-    if (!_eglQueryDevicesEXT(0, NULL, &num_devices) || num_devices < 1)
-        ERR("Not enough or no devices available");
+    //// query the devices available (first call to allocate enough memory)
+    //if (!_eglQueryDevicesEXT(0, NULL, &num_devices) || num_devices < 1)
+    //    ERR("Not enough or no devices available");
 
-    devices = (EGLDeviceEXT*) malloc(sizeof(EGLDeviceEXT) * num_devices);
-    if (!devices)
-        ERR("Could not allocate memory");
+    //devices = (EGLDeviceEXT*) malloc(sizeof(EGLDeviceEXT) * num_devices);
+    //if (!devices)
+    //    ERR("Could not allocate memory");
 
-    if (!_eglQueryDevicesEXT(num_devices, devices, &num_devices) || num_devices < 1)
-        ERR("Could not get all devices after allocating");
+    //if (!_eglQueryDevicesEXT(num_devices, devices, &num_devices) || num_devices < 1)
+    //    ERR("Could not get all devices after allocating");
 
-    // enumerate the devices
-    for (int i = 0; i < num_devices; ++i)
-    {
-        const char* dev = _eglQueryDeviceStringEXT(devices[i], EGL_DRM_DEVICE_FILE_EXT);
-        printf("Device 0x%.8lx: %s\n", (unsigned long)devices[i], dev ? dev : "NULL");
-    }
+    //// enumerate the devices
+    //for (int i = 0; i < num_devices; ++i)
+    //{
+    //    const char* dev = _eglQueryDeviceStringEXT(devices[i], EGL_DRM_DEVICE_FILE_EXT);
+    //    printf("Device 0x%.8lx: %s\n", (unsigned long)devices[i], dev ? dev : "NULL");
+    //}
 
     // create the headless context
-    int fd = open("/dev/dri/card0", O_RDWR);
-    int attr[] = { EGL_DRM_MASTER_FD_EXT, fd };
-    g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[1], attr);
-    printf("DISPLAY: %lu\n", (unsigned long)g_helper.display);
-    printf("EGL ERROR %d\n", eglGetError());
-    if (!g_helper.display)
-        ERR("Could not get EXT display");
+    //g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[1], NULL);
+    //printf("DISPLAY: %lu\n", (unsigned long)g_helper.display);
+    //printf("EGL ERROR %d\n", eglGetError());
+    //if (!g_helper.display)
+    //    ERR("Could not get EXT display");
 
-    if (g_helper.display == EGL_NO_DISPLAY)
-    {
-        g_helper.display = eglGetDisplay((EGLNativeDisplayType)EGL_DEFAULT_DISPLAY);
-    }
+    //if (g_helper.display == EGL_NO_DISPLAY)
+    //{
+        g_helper.display = eglGetDisplay(0);
+    //}
 
     if (eglInitialize(g_helper.display, &major, &minor) == 0)
         ERR("Could not initialize display");
