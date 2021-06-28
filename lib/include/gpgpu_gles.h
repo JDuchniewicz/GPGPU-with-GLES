@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include <fcntl.h>
-#include <gbm.h>
+#include <gbm/gbm.h>
 
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES

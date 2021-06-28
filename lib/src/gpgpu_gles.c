@@ -71,7 +71,7 @@ int GPGPU_API gpgpu_init()
     if (!gbm)
         ERR("Could not create gbm device");
 
-    g_helper.display = eglGetPlatformDisplay(EGL_PLATFORM_GBM_MESA, gbm, NULL);
+    g_helper.display = eglGetDisplay((EGLNativeDisplayType)gbm);
     if (!g_helper.display)
         ERR("Could not create display");
 

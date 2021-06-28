@@ -30,7 +30,7 @@ target_include_directories(GPGPU_GLES
 
 target_link_libraries(GPGPU_GLES
     PRIVATE
-    EGL::EGL OpenGLES2::OpenGLES2
+    EGL::EGL OpenGLES2::OpenGLES2 gbm
 )
 ###################################
 # Installation instructions
