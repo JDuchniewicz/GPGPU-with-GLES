@@ -2,8 +2,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <fcntl.h>
+#include <gbm.h>
 
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES

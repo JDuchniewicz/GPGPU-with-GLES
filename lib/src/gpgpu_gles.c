@@ -59,8 +59,21 @@ int GPGPU_API gpgpu_init()
 
     //if (g_helper.display == EGL_NO_DISPLAY)
     //{
-        g_helper.display = eglGetDisplay(0);
+        //g_helper.display = eglGetDisplay(0);
     //}
+
+
+    int32_t fd = open("/dev/dri/renderD128", O_RDWR);
+    if (fd <= 0)
+        ERR("Could not open device");
+
+    struct gbm_device* gbm = gbm_create_device(fd);
+    if (!gbm)
+        ERR("Could not create gbm device");
+
+    g_helper.display = eglGetPlatformDisplay(EGL_PLATFORM_GBM_MESA, gbm, NULL);
+    if (!g_helper.display)
+        ERR("Could not create display");
 
     if (eglInitialize(g_helper.display, &major, &minor) == 0)
         ERR("Could not initialize display");
