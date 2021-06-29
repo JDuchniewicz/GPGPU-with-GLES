@@ -1,9 +1,9 @@
 #include "gpgpu_gles.h"
 
 GLHelper g_helper;
-PFNEGLQUERYDEVICESEXTPROC _eglQueryDevicesEXT = NULL;
-PFNEGLQUERYDEVICESTRINGEXTPROC _eglQueryDeviceStringEXT = NULL;
-PFNEGLGETPLATFORMDISPLAYEXTPROC _eglGetPlatformDisplayEXT = NULL;
+//PFNEGLQUERYDEVICESEXTPROC _eglQueryDevicesEXT = NULL;
+//PFNEGLQUERYDEVICESTRINGEXTPROC _eglQueryDeviceStringEXT = NULL;
+//PFNEGLGETPLATFORMDISPLAYEXTPROC _eglGetPlatformDisplayEXT = NULL;
 
 #define ERR(m) { \
     ret = -1; \
@@ -117,6 +117,7 @@ bail:
     return ret;
 }
 
+// for now this api is single-shot only (textures could be reused between calls)
 int GPGPU_API gpgpu_deinit()
 {
     eglDestroySurface(g_helper.display, g_helper.surface);
@@ -129,7 +130,6 @@ int GPGPU_API gpgpu_deinit()
 
 int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
 {
-
     return 0;
 }
 
@@ -262,4 +262,72 @@ void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display)
 	eglGetConfigAttrib(display,EGLConfig,EGL_RENDERABLE_TYPE,&value);
 	printf("Renderable type %i\n", value);
 	printf("-------------------------------------\n");
+}
+
+static int gpgpu_make_FBO(int w, int h)
+{
+    int ret = 0;
+    GLuint texId, fbId;
+
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, 0); // allows for floating-point buffer in ES2.0 (format should be RGBA32F)
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenFramebuffers(1, &fbId);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbId);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
+
+    ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (ret != GL_FRAMEBUFFER_COMPLETE)
+        gpgpu_report_framebuffer_status(ret);
+    else
+        ret = 0;
+
+    return ret;
+}
+
+static void gpgpu_make_texture(float* buffer, int w, int h) //TODO: int to float casting?
+{
+    GLuint texId;
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, buffer);
+}
+
+static void gpgpu_build_program()
+{
+   g_helper.ESShaderProgram = glCreateProgram();
+   // TODO: shader management code (storing them in files etc)
+   // vertex
+   //
+   // fragment
+}
+
+static void gpgpu_report_framebuffer_status(int ret)
+{
+    switch(ret)
+    {
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            printf("FRAMEBUFFER_UNSUPPORTED\n");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            printf("FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+            printf("FRAMEBUFFER_INCOMPLETE_DIMENSIONS\n");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            printf("FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");
+            break;
+        default:
+            printf("Framebuffer creation error %d\n", ret);
+            break;
+    }
 }

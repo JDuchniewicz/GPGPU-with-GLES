@@ -15,6 +15,20 @@
 
 #define GPGPU_API // just a marker
 
+const float geometry[20] = {};
+const GLbyte RegularVShader[] = "attribute vec3 position;\n"
+                                "attribute vec3 texCoord;\n"
+                                "varying highp vec2 vTexCoord;\n"
+                                "void main(void) {\n"
+                                "gl_Position = vec4(position, 1.0);\n"
+                                "vTexCoord = texCoord;\n"
+                                "}\n";
+
+typedef struct
+{
+
+} Texture;
+
 typedef struct
 {
 	GLint ESShaderProgram;
@@ -38,4 +52,9 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 // private functions
 static int gpgpu_check_egl_extensions();
 static int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format);
+static int gpgpu_make_FBO(int w, int h);
+static void gpgpu_make_texture(float* buffer, int w, int h); //TODO: int to float casting?
+
+// private logging functions
+static void gpgpu_report_framebuffer_status(int ret);
 void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display);
