@@ -37,3 +37,5 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 
 // private functions
 static int gpgpu_check_egl_extensions();
+static int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format);
+void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display);

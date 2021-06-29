@@ -83,11 +83,13 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (gpgpu_check_egl_extensions() != 0)
         ERR("Not enough extensions supported");
 
+    if (gpgpu_find_matching_config(&g_helper.config, GBM_FORMAT_ARGB8888) != 0)
+        ERR("Could not find matching config");
 
     if (eglBindAPI(EGL_OPENGL_ES_API) == 0)
         ERR("Could not bind the API");
 
-    g_helper.gbm_surface = gbm_surface_create(g_helper.gbm, width, height, GBM_FORMAT_XRGB8888, GBM_BO_USE_RENDERING);
+    g_helper.gbm_surface = gbm_surface_create(g_helper.gbm, width, height, GBM_FORMAT_ARGB8888, GBM_BO_USE_RENDERING);
     if (!g_helper.gbm_surface)
         ERR("Could not create GBM surface");
 
@@ -163,13 +165,85 @@ static int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
         EGL_NONE
     };
     if (!eglGetConfigs(g_helper.display, NULL, 0, &count))
-        ERR("Could not get number of configs.");
-//    if (!eglChooseConfig(g_helper.display, , EGLConfig *configs, EGLint config_size, EGLint *num_config)
-//    EGLConfig* configs =
+        ERR("Could not get number of configs");
 
+    EGLConfig* configs = malloc(count * sizeof(EGLConfig));
+    if (!eglChooseConfig(g_helper.display, config_attrs, configs, count, &count) || count < 1)
+        ERR("Could not choose configs or config size < 1");
 
-    if (eglChooseConfig(g_helper.display, config_attrs, &g_helper.config, 1, &count) == 0)
-        ERR("Could not create config");
+    printf("Seeked ID %d\n", gbm_format);
+    for (int i = 0; i < count; ++i)
+    {
+        EGLint format;
+
+        if (!eglGetConfigAttrib(g_helper.display, configs[i], EGL_NATIVE_VISUAL_ID, &format))
+            ERR("Could not iterate through configs");
+
+        dumpEGLconfig(configs[i], g_helper.display);
+        if (gbm_format == format)
+        {
+            *config = configs[i];
+            free(configs);
+            return ret;
+        }
+    }
+
+    ERR("Failed to find a matching config");
 bail:
+    if (configs)
+        free(configs);
     return ret;
+}
+void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display)
+{
+	EGLint value;
+
+ 	eglGetConfigAttrib(display,EGLConfig,EGL_BUFFER_SIZE,&value);
+	printf("Buffer Size %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_RED_SIZE,&value);
+	printf("Red Size %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_GREEN_SIZE,&value);
+	printf("Green Size %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_BLUE_SIZE,&value);
+	printf("Blue Size %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_ALPHA_SIZE,&value);
+	printf("Alpha Size %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_CONFIG_CAVEAT,&value);
+	switch(value) {
+	case  EGL_NONE:
+		printf("EGL_CONFIG_CAVEAT EGL_NONE\n");
+		break;
+	case  EGL_SLOW_CONFIG:
+		printf("EGL_CONFIG_CAVEAT EGL_SLOW_CONFIG\n");
+		break;
+	}
+	eglGetConfigAttrib(display,EGLConfig,EGL_CONFIG_ID,&value);
+	printf("Config ID %i\n", value);
+
+	eglGetConfigAttrib(display,EGLConfig,EGL_DEPTH_SIZE,&value);
+	printf("Depth size %i\n", value);
+
+	eglGetConfigAttrib(display,EGLConfig,EGL_MAX_PBUFFER_WIDTH,&value);
+	printf("Max pbuffer width %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_MAX_PBUFFER_HEIGHT,&value);
+	printf("Max pbuffer height %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_MAX_PBUFFER_PIXELS,&value);
+	printf("Max pbuffer pixels %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_NATIVE_RENDERABLE,&value);
+	printf("Native renderable %s\n", (value ? "true" : "false"));
+	eglGetConfigAttrib(display,EGLConfig,EGL_NATIVE_VISUAL_ID,&value);
+	printf("Native visual ID %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_NATIVE_VISUAL_TYPE,&value);
+	printf("Native visual type %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_SAMPLE_BUFFERS,&value);
+	printf("Sample Buffers %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_SAMPLES,&value);
+	printf("Samples %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_SURFACE_TYPE,&value);
+	printf("Surface type %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_TRANSPARENT_TYPE,&value);
+	printf("Transparent type %i\n", value);
+	eglGetConfigAttrib(display,EGLConfig,EGL_RENDERABLE_TYPE,&value);
+	printf("Renderable type %i\n", value);
+	printf("-------------------------------------\n");
 }
