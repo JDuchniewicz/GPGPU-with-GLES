@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <fcntl.h>
 #include <gbm/gbm.h>
@@ -20,9 +21,12 @@ typedef struct
 	GLbyte* FShaderSource; //the shader programs are specified as strings and are loaded depending on the program (maybe should be binary blobs in the final impl)
 	GLbyte* VShaderSource; //ditto
 	EGLDisplay display;
-	EGLSurface surface;
-	EGLint config;
+	EGLConfig config;
 	EGLContext context;
+    EGLSurface surface;
+    struct gbm_device* gbm;
+    struct gbm_surface* gbm_surface;
+    int32_t gbd_fd;
 } GLHelper;
 
 int GPGPU_API gpgpu_init();
@@ -30,3 +34,6 @@ int GPGPU_API gpgpu_deinit();
 int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res);
 int GPGPU_API gpgpu_firConvolution(int* data, int len, int* kernel, int size, int* res);
 int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
+
+// private functions
+static int gpgpu_check_egl_extensions();
