@@ -13,6 +13,10 @@ PFNEGLGETPLATFORMDISPLAYEXTPROC _eglGetPlatformDisplayEXT = NULL;
 
 // TODO: map GL errors?
 
+/////////////////////////
+////* API FUNCTIONS *////
+/////////////////////////
+
 int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
 {
     int ret = 0;
@@ -97,19 +101,26 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (g_helper.surface == EGL_NO_SURFACE)
         ERR("Could not create EGL surface");
 
+    g_helper.context = eglCreateContext(g_helper.display, g_helper.config, EGL_NO_CONTEXT, NULL);
+    if (g_helper.context == EGL_NO_CONTEXT)
+        ERR("Could not create EGL context");
+
+    if (eglMakeCurrent(g_helper.display, g_helper.surface, g_helper.surface, g_helper.context) != EGL_TRUE)
+        ERR("Could not bind the surface to context");
+
     return ret;
 
 bail:
     // release all resources
-    eglTerminate(g_helper.display);
-    gbm_device_destroy(g_helper.gbm);
-    close(g_helper.gbd_fd);
+    gpgpu_deinit();
 
     return ret;
 }
 
 int GPGPU_API gpgpu_deinit()
 {
+    eglDestroySurface(g_helper.display, g_helper.surface);
+    eglDestroyContext(g_helper.display, g_helper.context);
     eglTerminate(g_helper.display);
     gbm_device_destroy(g_helper.gbm);
     close(g_helper.gbd_fd);
@@ -133,6 +144,10 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
 
     return 0;
 }
+
+/////////////////////////////
+////* PRIVATE FUNCTIONS *////
+/////////////////////////////
 
 static int gpgpu_check_egl_extensions()
 {
@@ -194,6 +209,7 @@ bail:
         free(configs);
     return ret;
 }
+
 void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display)
 {
 	EGLint value;
