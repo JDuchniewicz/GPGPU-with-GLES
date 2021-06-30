@@ -301,13 +301,49 @@ static void gpgpu_make_texture(float* buffer, int w, int h) //TODO: int to float
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, buffer);
 }
 
-static void gpgpu_build_program()
+static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)
 {
-   g_helper.ESShaderProgram = glCreateProgram();
-   // TODO: shader management code (storing them in files etc)
-   // vertex
-   //
-   // fragment
+    int infoLen = 0;
+    g_helper.ESShaderProgram = glCreateProgram();
+    // TODO: shader management code (storing them in files etc)
+    // compile shaders
+    // vertex
+    GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vertexSource, NULL);
+    glCompileShader(vertex);
+
+    glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &infoLen);
+    if (infoLen > 1) // TODO: optimize it
+    {
+        // allocate on stack for now
+        char outLog[infoLen];
+        glGetShaderInfoLog(vertex, infoLen, NULL, outLog);
+        printf("VERTEX:\n %s\n", outLog);
+    }
+
+    // fragment
+    GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &fragmentSource, NULL);
+    glCompileShader(fragment);
+
+    glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &infoLen);
+    if (infoLen > 1) // TODO: optimize it
+    {
+        // allocate on stack for now
+        char outLog[infoLen];
+        glGetShaderInfoLog(fragment, infoLen, NULL, outLog);
+        printf("FRAGMENT:\n %s\n", outLog);
+    }
+
+    // attach them
+    glAttachShader(g_helper.ESShaderProgram, vertex);
+    glAttachShader(g_helper.ESShaderProgram, fragment);
+
+    glLinkProgram(g_helper.ESShaderProgram);
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+
+    glUseProgram(g_helper.ESShaderProgram);
 }
 
 static void gpgpu_report_framebuffer_status(int ret)
