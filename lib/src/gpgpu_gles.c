@@ -84,6 +84,7 @@ int GPGPU_API gpgpu_deinit()
 
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
 {
+    int ret = 0;
     GLuint texId0, texId1;
     gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
     gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
@@ -110,23 +111,39 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
     glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
 
     // setup the vertex position as the attribute of vertex shader
-    glUseProgram(g_helper.ESShaderProgram);
-    int loc = glGetAttribLocation(g_helper.ESShaderProgram, "position");
-    glEnableVertexAttribArray(loc);
-    glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 20, (GLvoid*)0);
-
-    glUseProgram(g_helper.ESShaderProgram);
-    loc = glGetAttribLocation(g_helper.ESShaderProgram, "texCoord");
-    glEnableVertexAttribArray(loc);
-    glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 20, (GLvoid*)(3 * sizeof(float)));
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
 
     // do the actual computation
     // bind textures to their respective texturing units
+    // add texture uniforms to fragment shader
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
 
-    // add texture uniforms to fragment shader
-    return 0;
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, texId1);
+    gpgpu_add_uniform("texture1", 1, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+
+    // finally draw it
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // magic happens and the data is now ready
+    // poof!
+    //////////
+
+    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, res);
+
+    return ret;
+bail:
+    // TODO: what should be released upon failure?
+    return ret;
 }
 
 int GPGPU_API gpgpu_firConvolution(int* data, int len, int* kernel, int size, int* res)
@@ -341,6 +358,26 @@ static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragme
     glUseProgram(g_helper.ESShaderProgram);
 }
 
+static void gpgpu_add_attribute(const char* name, int size, int stride, int offset)
+{
+    // setup the vertex position as the attribute of vertex shader
+    glUseProgram(g_helper.ESShaderProgram);
+    int loc = glGetAttribLocation(g_helper.ESShaderProgram, name);
+    glEnableVertexAttribArray(loc);
+    glVertexAttribPointer(loc, size, GL_FLOAT, GL_FALSE, stride, (GLvoid*)(offset * sizeof(float)));
+}
+
+static void gpgpu_add_uniform(const char* name, int value, const char* type)
+{
+    int loc = glGetUniformLocation(g_helper.ESShaderProgram, name);
+    if (strcmp(type, "uniform1f"))
+        glUniform1f(loc, value);
+    else if (strcmp(type, "uniform1i"))
+        glUniform1i(loc, value);
+    else
+        printf("UNKNOWN UNIFORM\n");
+}
+
 static void gpgpu_report_framebuffer_status(int ret)
 {
     switch(ret)
@@ -361,4 +398,35 @@ static void gpgpu_report_framebuffer_status(int ret)
             printf("Framebuffer creation error %d\n", ret);
             break;
     }
+}
+
+static int gpgpu_report_glError(GLenum error)
+{
+    int ret = 0;
+    while (error != GL_NO_ERROR)
+    {
+        ret = -1;
+        switch (error) {
+            case GL_INVALID_ENUM:
+                printf("INVALID_ENUM\n");
+                break;
+            case GL_INVALID_VALUE:
+                printf("INVALID_VALUE\n");
+                break;
+            case GL_INVALID_OPERATION:
+                printf("INVALID_OPERATION\n");
+                break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                printf("INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+            case GL_OUT_OF_MEMORY:
+                printf("OUT_OF_MEMORY\n");
+                break;
+            default:
+                printf("GL UNKOWN ERROR!\n");
+                break;
+        }
+        error = glGetError();
+    }
+    return ret;
 }

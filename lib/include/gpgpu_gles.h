@@ -66,7 +66,10 @@ static int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format);
 static int gpgpu_make_FBO(int w, int h);
 static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId); //TODO: int to float casting?
 static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource);
+static void gpgpu_add_attribute(const char* name, int size, int stride, int offset);
+static void gpgpu_add_uniform(const char* name, int value, const char* type);
 
 // private logging functions
 static void gpgpu_report_framebuffer_status(int ret);
 void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display);
+static int gpgpu_report_glError(GLenum error);
