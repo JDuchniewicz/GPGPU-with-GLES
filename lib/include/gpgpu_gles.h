@@ -15,14 +15,25 @@
 
 #define GPGPU_API // just a marker
 
-const float geometry[20] = {};
-const GLchar* RegularVShader = "attribute vec3 position;\n"
-                               "attribute vec3 texCoord;\n"
-                               "varying highp vec2 vTexCoord;\n"
-                               "void main(void) {\n"
-                               "gl_Position = vec4(position, 1.0);\n"
-                               "vTexCoord = texCoord;\n"
-                               "}\n";
+// TODO: this needs tweaking
+#define WIDTH 1024
+#define HEIGHT 1024
+
+// the geometry is scaled to a square 2x2 from (-1,-1) to (1,1)
+static const float gpgpu_geometry[20] = {
+    -1.0,  1.0, 0.0, 0.0, 1.0, // top left
+    -1.0, -1.0, 0.0, 0.0, 0.0, // bottom left
+     1.0,  1.0, 0.0, 1.0, 1.0, // top right
+     1.0, -1.0, 0.0, 1.0, 0.0  // bottom right
+};
+
+static const GLchar* RegularVShader = "attribute vec3 position;\n"
+                                      "attribute vec3 texCoord;\n"
+                                      "varying highp vec2 vTexCoord;\n"
+                                      "void main(void) {\n"
+                                      "gl_Position = vec4(position, 1.0);\n"
+                                      "vTexCoord = texCoord;\n"
+                                      "}\n";
 
 typedef struct
 {
@@ -45,7 +56,7 @@ typedef struct
 
 int GPGPU_API gpgpu_init();
 int GPGPU_API gpgpu_deinit();
-int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res);
+int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res);
 int GPGPU_API gpgpu_firConvolution(int* data, int len, int* kernel, int size, int* res);
 int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 
@@ -53,8 +64,8 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 static int gpgpu_check_egl_extensions();
 static int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format);
 static int gpgpu_make_FBO(int w, int h);
-static void gpgpu_make_texture(float* buffer, int w, int h); //TODO: int to float casting?
-static void gpgpu_build_program();
+static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId); //TODO: int to float casting?
+static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource);
 
 // private logging functions
 static void gpgpu_report_framebuffer_status(int ret);

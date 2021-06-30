@@ -1,9 +1,6 @@
 #include "gpgpu_gles.h"
 
 GLHelper g_helper;
-//PFNEGLQUERYDEVICESEXTPROC _eglQueryDevicesEXT = NULL;
-//PFNEGLQUERYDEVICESTRINGEXTPROC _eglQueryDeviceStringEXT = NULL;
-//PFNEGLGETPLATFORMDISPLAYEXTPROC _eglGetPlatformDisplayEXT = NULL;
 
 #define ERR(m) { \
     ret = -1; \
@@ -20,52 +17,7 @@ GLHelper g_helper;
 int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
 {
     int ret = 0;
-    int major, minor;//, num_devices;
-    // EGLDeviceEXT* devices = NULL;
-
-    ///// load the extensions (hidden symbols???)
-    //_eglQueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC) eglGetProcAddress("eglQueryDevicesEXT");
-    //if (!_eglQueryDevicesEXT)
-    //    ERR("Could not import eglQueryDevicesEXT()");
-
-    //_eglQueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC) eglGetProcAddress("eglQueryDeviceStringEXT");
-    //if (!_eglQueryDeviceStringEXT)
-    //    ERR("Could not import eglQueryDeviceStringEXT()");
-
-    //_eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
-    //if (!_eglGetPlatformDisplayEXT)
-    //    ERR("Could not import eglGetPlatformDisplayEXT()");
-
-    //// query the devices available (first call to allocate enough memory)
-    //if (!_eglQueryDevicesEXT(0, NULL, &num_devices) || num_devices < 1)
-    //    ERR("Not enough or no devices available");
-
-    //devices = (EGLDeviceEXT*) malloc(sizeof(EGLDeviceEXT) * num_devices);
-    //if (!devices)
-    //    ERR("Could not allocate memory");
-
-    //if (!_eglQueryDevicesEXT(num_devices, devices, &num_devices) || num_devices < 1)
-    //    ERR("Could not get all devices after allocating");
-
-    //// enumerate the devices
-    //for (int i = 0; i < num_devices; ++i)
-    //{
-    //    const char* dev = _eglQueryDeviceStringEXT(devices[i], EGL_DRM_DEVICE_FILE_EXT);
-    //    printf("Device 0x%.8lx: %s\n", (unsigned long)devices[i], dev ? dev : "NULL");
-    //}
-
-    // create the headless context
-    //g_helper.display = _eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[1], NULL);
-    //printf("DISPLAY: %lu\n", (unsigned long)g_helper.display);
-    //printf("EGL ERROR %d\n", eglGetError());
-    //if (!g_helper.display)
-    //    ERR("Could not get EXT display");
-
-    //if (g_helper.display == EGL_NO_DISPLAY)
-    //{
-        //g_helper.display = eglGetDisplay(0);
-    //}
-
+    int major, minor;
 
     g_helper.gbd_fd = open("/dev/dri/renderD128", O_RDWR);
     if (g_helper.gbd_fd <= 0)
@@ -108,8 +60,10 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (eglMakeCurrent(g_helper.display, g_helper.surface, g_helper.surface, g_helper.context) != EGL_TRUE)
         ERR("Could not bind the surface to context");
 
-    return ret;
+    if (gpgpu_make_FBO(WIDTH, HEIGHT) != 0)
+        ERR("Could not create FBO");
 
+    return ret;
 bail:
     // release all resources
     gpgpu_deinit();
@@ -128,8 +82,50 @@ int GPGPU_API gpgpu_deinit()
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
+int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
 {
+    GLuint texId0, texId1;
+    gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
+    gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
+
+    const GLchar* fragmentSource = "precision mediump float;\n"
+                                   "uniform mediump sampler2D texture0;\n"
+                                   "uniform mediump sampler2D texture1;\n"
+                                   "varying vec2 vTexCoord;\n"
+                                   "void main(void) {\n"
+                                   "vec4 pixel1 = texture2D(texture0, vTexCoord);\n"
+                                   "vec4 pixel2 = texture2D(texture1, vTexCoord);\n"
+                                   "gl_FragColor.r = pixel1.r + pixel2.r;\n"
+                                   "gl_FragColor.g = pixel1.g + pixel2.g;\n"
+                                   "gl_FragColor.b = pixel1.b + pixel2.b;\n"
+                                   "gl_FragColor.a = pixel1.a + pixel2.a;\n"
+                                   "}\n";
+
+    gpgpu_build_program(RegularVShader, fragmentSource);
+
+    // create the geometry to draw the texture on
+    GLuint geometry;
+    glGenBuffers(1, &geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+
+    // setup the vertex position as the attribute of vertex shader
+    glUseProgram(g_helper.ESShaderProgram);
+    int loc = glGetAttribLocation(g_helper.ESShaderProgram, "position");
+    glEnableVertexAttribArray(loc);
+    glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 20, (GLvoid*)0);
+
+    glUseProgram(g_helper.ESShaderProgram);
+    loc = glGetAttribLocation(g_helper.ESShaderProgram, "texCoord");
+    glEnableVertexAttribArray(loc);
+    glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 20, (GLvoid*)(3 * sizeof(float)));
+
+    // do the actual computation
+    // bind textures to their respective texturing units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId0);
+
+    // add texture uniforms to fragment shader
     return 0;
 }
 
@@ -287,11 +283,10 @@ static int gpgpu_make_FBO(int w, int h)
     return ret;
 }
 
-static void gpgpu_make_texture(float* buffer, int w, int h) //TODO: int to float casting?
+static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
 {
-    GLuint texId;
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
+    glGenTextures(1, texId);
+    glBindTexture(GL_TEXTURE_2D, *texId);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
