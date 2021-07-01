@@ -57,7 +57,7 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (g_helper.context == EGL_NO_CONTEXT)
         ERR("Could not create EGL context");
 
-    if (eglMakeCurrent(g_helper.display, g_helper.surface, g_helper.surface, g_helper.context) != EGL_TRUE)
+    if (eglMakeCurrent(g_helper.display, g_helper.surface, g_helper.surface, g_helper.context) != EGL_TRUE) // EGL_NO_SURFACE??
         ERR("Could not bind the surface to context");
 
     if (gpgpu_make_FBO(WIDTH, HEIGHT) != 0)
@@ -82,7 +82,7 @@ int GPGPU_API gpgpu_deinit()
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
+int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
 {
     int ret = 0;
     GLuint texId0, texId1;
@@ -113,7 +113,6 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
     // setup the vertex position as the attribute of vertex shader
     gpgpu_add_attribute("position", 3, 20, 0);
     gpgpu_add_attribute("texCoord", 2, 20, 3);
-
     // do the actual computation
     // bind textures to their respective texturing units
     // add texture uniforms to fragment shader
@@ -130,7 +129,6 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
     if (gpgpu_report_glError(glGetError()) != 0)
         ERR("Could not prepare textures");
 
-
     // finally draw it
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -138,7 +136,7 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, int len, float* res)
     // poof!
     //////////
 
-    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, res);
+    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, res);
 
     return ret;
 bail:
@@ -284,7 +282,7 @@ static int gpgpu_make_FBO(int w, int h)
 
     glGenTextures(1, &texId);
     glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, 0); // allows for floating-point buffer in ES2.0 (format should be RGBA32F)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0); // allows for floating-point buffer in ES2.0 (format should be RGBA32F)
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenFramebuffers(1, &fbId);
@@ -300,7 +298,7 @@ static int gpgpu_make_FBO(int w, int h)
     return ret;
 }
 
-static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
+static void gpgpu_make_texture(int* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
 {
     glGenTextures(1, texId);
     glBindTexture(GL_TEXTURE_2D, *texId);
@@ -310,17 +308,20 @@ static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TOD
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, buffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 }
 
 static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)
 {
     int infoLen = 0;
-    g_helper.ESShaderProgram = glCreateProgram();
     // TODO: shader management code (storing them in files etc)
     // compile shaders
     // vertex
+    printf("BIP\n");
+    gpgpu_report_glError(glGetError());
     GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+    printf("BOP\n");
+    gpgpu_report_glError(glGetError());
     glShaderSource(vertex, 1, &vertexSource, NULL);
     glCompileShader(vertex);
 
@@ -346,6 +347,10 @@ static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragme
         glGetShaderInfoLog(fragment, infoLen, NULL, outLog);
         printf("FRAGMENT:\n %s\n", outLog);
     }
+    gpgpu_report_glError(glGetError());
+    g_helper.ESShaderProgram = glCreateProgram();
+    printf("%d\n", g_helper.ESShaderProgram);
+    gpgpu_report_glError(glGetError());
 
     // attach them
     glAttachShader(g_helper.ESShaderProgram, vertex);
