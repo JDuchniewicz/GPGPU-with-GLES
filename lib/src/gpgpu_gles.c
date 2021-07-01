@@ -359,6 +359,20 @@ static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragme
     glAttachShader(g_helper.ESShaderProgram, fragment);
 
     glLinkProgram(g_helper.ESShaderProgram);
+
+    GLint linked;
+    glGetProgramiv(g_helper.ESShaderProgram, GL_LINK_STATUS, &linked);
+    if (!linked)
+    {
+        glGetProgramiv(g_helper.ESShaderProgram, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            // allocate on stack for now
+            char outLog[infoLen];
+            glGetProgramInfoLog(g_helper.ESShaderProgram, infoLen, NULL, outLog);
+            printf("PROGRAM:\n %s\n", outLog);
+        }
+    }
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
@@ -377,11 +391,12 @@ static void gpgpu_add_attribute(const char* name, int size, int stride, int offs
 static void gpgpu_add_uniform(const char* name, int value, const char* type)
 {
     int loc = glGetUniformLocation(g_helper.ESShaderProgram, name);
-    gpgpu_report_glError(glGetError());
-    if (strcmp(type, "uniform1f"))
+    if (strcmp(type, "uniform1f") == 0)
         glUniform1f(loc, value);
-    else if (strcmp(type, "uniform1i"))
+    else if (strcmp(type, "uniform1i") == 0)
+    {
         glUniform1i(loc, value);
+    }
     else
         printf("UNKNOWN UNIFORM\n");
 }
