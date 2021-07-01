@@ -53,12 +53,21 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (g_helper.surface == EGL_NO_SURFACE)
         ERR("Could not create EGL surface");
 
-    g_helper.context = eglCreateContext(g_helper.display, g_helper.config, EGL_NO_CONTEXT, NULL);
+    EGLint eglContextAttributes[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
+
+    g_helper.context = eglCreateContext(g_helper.display, g_helper.config, EGL_NO_CONTEXT, eglContextAttributes);
     if (g_helper.context == EGL_NO_CONTEXT)
         ERR("Could not create EGL context");
 
     if (eglMakeCurrent(g_helper.display, g_helper.surface, g_helper.surface, g_helper.context) != EGL_TRUE) // EGL_NO_SURFACE??
         ERR("Could not bind the surface to context");
+
+    EGLint version = 0;
+    eglQueryContext(g_helper.display, g_helper.context, EGL_CONTEXT_CLIENT_VERSION, &version);
+    printf("EGL Context version: %d\n", version);
 
     if (gpgpu_make_FBO(WIDTH, HEIGHT) != 0)
         ERR("Could not create FBO");
@@ -314,14 +323,11 @@ static void gpgpu_make_texture(int* buffer, int w, int h, GLuint* texId) //TODO:
 static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)
 {
     int infoLen = 0;
+    g_helper.ESShaderProgram = glCreateProgram();
     // TODO: shader management code (storing them in files etc)
     // compile shaders
     // vertex
-    printf("BIP\n");
-    gpgpu_report_glError(glGetError());
     GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-    printf("BOP\n");
-    gpgpu_report_glError(glGetError());
     glShaderSource(vertex, 1, &vertexSource, NULL);
     glCompileShader(vertex);
 
@@ -347,10 +353,6 @@ static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragme
         glGetShaderInfoLog(fragment, infoLen, NULL, outLog);
         printf("FRAGMENT:\n %s\n", outLog);
     }
-    gpgpu_report_glError(glGetError());
-    g_helper.ESShaderProgram = glCreateProgram();
-    printf("%d\n", g_helper.ESShaderProgram);
-    gpgpu_report_glError(glGetError());
 
     // attach them
     glAttachShader(g_helper.ESShaderProgram, vertex);
@@ -375,6 +377,7 @@ static void gpgpu_add_attribute(const char* name, int size, int stride, int offs
 static void gpgpu_add_uniform(const char* name, int value, const char* type)
 {
     int loc = glGetUniformLocation(g_helper.ESShaderProgram, name);
+    gpgpu_report_glError(glGetError());
     if (strcmp(type, "uniform1f"))
         glUniform1f(loc, value);
     else if (strcmp(type, "uniform1i"))
