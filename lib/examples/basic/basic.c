@@ -23,7 +23,7 @@ int main()
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
         printf("%.1f ", a1[i]);
-        if (i % WIDTH == 0)
+        if ((i + 1) % WIDTH == 0)
             printf("\n");
     }
     printf("\n");
@@ -35,7 +35,7 @@ int main()
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
         printf("%.1f ", res[i]);
-        if (i % WIDTH == 0)
+        if ((i + 1) % WIDTH == 0)
             printf("\n");
     }
     printf("\n");

@@ -169,9 +169,10 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
                                    "{"
                                    " vec4 texel1 = texture2D(texture0, vTexCoord);"
                                    " vec4 texel2 = texture2D(texture1, vTexCoord);"
-                                   " float a1 = unpack(texel1);"
-                                   " float a2 = unpack(texel2);"
-                                   " gl_FragColor = pack(a1 + a2);"
+                                   //" float a1 = unpack(texel1);"
+                                   //" float a2 = unpack(texel2);"
+                                   //" gl_FragColor = pack(a1 + a2);"
+                                   " gl_FragColor = texel1;"
                                    "}";
 
     gpgpu_build_program(RegularVShader, fragmentSource);
@@ -211,15 +212,20 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
 
     glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     // convert from unsigned bytes back to the original format (float?)
-    res = (float*)buffer;
     printf("RAW contents after addition: \n");
     for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
     {
         printf("%d ", buffer[i]);
-        if (i % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * WIDTH) == 0)
             printf("\n");
     }
     printf("\n");
+
+    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 4)
+    {
+        res[i / 4] = (float)(buffer[i]);
+    }
 
     free(buffer);
     return ret;
@@ -385,6 +391,7 @@ static int gpgpu_make_FBO(int w, int h)
 
 static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
 {
+    unsigned char fakea1[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     glGenTextures(1, texId);
     glBindTexture(GL_TEXTURE_2D, *texId);
 
@@ -393,7 +400,8 @@ static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TOD
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, buffer);
+    // openGL loads the texture from bottom to top, left to right so the data is in wrong order
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fakea1); // read floats, treat them as unsigned bytes
 }
 
 static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)
