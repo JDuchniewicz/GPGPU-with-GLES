@@ -91,25 +91,88 @@ int GPGPU_API gpgpu_deinit()
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
+int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
 {
     int ret = 0;
+    unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
     GLuint texId0, texId1;
     gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
     gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
 
-    const GLchar* fragmentSource = "precision mediump float;\n"
-                                   "uniform mediump sampler2D texture0;\n"
-                                   "uniform mediump sampler2D texture1;\n"
-                                   "varying vec2 vTexCoord;\n"
-                                   "void main(void) {\n"
-                                   "vec4 pixel1 = texture2D(texture0, vTexCoord);\n"
-                                   "vec4 pixel2 = texture2D(texture1, vTexCoord);\n"
-                                   "gl_FragColor.r = pixel1.r + pixel2.r;\n"
-                                   "gl_FragColor.g = pixel1.g + pixel2.g;\n"
-                                   "gl_FragColor.b = pixel1.b + pixel2.b;\n"
-                                   "gl_FragColor.a = pixel1.a + pixel2.a;\n"
-                                   "}\n";
+    // inputs are float textures, output is a vec4 of unsigned bytes representing the float result of one texel
+    // we need to extract the bits following the IEEE754 floating point format because GLES 2.0 does not have bit extraction
+    const GLchar* fragmentSource = "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+                                   "precision highp float;\n"
+                                   "#else\n"
+                                   "precision mediump float;\n"
+                                   "#endif\n"
+                                   ""
+                                   "uniform sampler2D texture0;"
+                                   "uniform sampler2D texture1;"
+                                   ""
+                                   "varying vec2 vTexCoord;"
+                                   ""
+                                   "vec4 pack(float value)"
+                                   "{"
+                                   " if (value == 0.0) return vec4(0);"
+                                   ""
+                                   " float exponent;"
+                                   " float mantissa;"
+                                   " vec4 result;"
+                                   " float sgn;"
+                                   ""
+                                   " sgn = step(0.0, -value);"
+                                   " value = abs(value);"
+                                   ""
+                                   " exponent = floor(log2(value));"
+                                   " mantissa = value * pow(2.0, -exponent) - 1.0;"
+                                   " exponent = exponent + 127.0;"
+                                   " result = vec4(0);"
+                                   ""
+                                   " result.a = floor(exponent / 2.0);"
+                                   " exponent = exponent - result.a * 2.0;"
+                                   " result.a = result.a + 128.0 * sgn;"
+                                   ""
+                                   " result.b = floor(mantissa * 128.0);"
+                                   " mantissa = mantissa - result.b / 128.0;"
+                                   " result.b = result.b + exponent * 128.0;"
+                                   ""
+                                   " result.g = floor(mantissa * 32768.0);"
+                                   " mantissa = mantissa - result.g / 32768.0;"
+                                   ""
+                                   " result.r = floor(mantissa * 8388608.0);"
+                                   ""
+                                   " return result / 255.0;"
+                                   "}"
+                                   ""
+                                   "float unpack(vec4 texel)"
+                                   "{"
+                                   " float exponent;"
+                                   " float mantissa;"
+                                   " float value;"
+                                   " float sgn;"
+                                   ""
+                                   " sgn = -step(128.0, texel.a);"
+                                   " texel.a += 128.0 * sgn;"
+                                   ""
+                                   " exponent = step(128.0, texel.b);"
+                                   " texel.b -= exponent * 128.0;"
+                                   " exponent += 2.0 * texel.a - 127.0;"
+                                   ""
+                                   " mantissa = texel.b * 65536.0 + texel.g * 256.0 + texel.r;"
+                                   " value = sgn * exp2(exponent) * (1.0 + mantissa * exp2(-23.0));"
+                                   ""
+                                   " return value;"
+                                   "}"
+                                   ""
+                                   "void main(void)"
+                                   "{"
+                                   " vec4 texel1 = texture2D(texture0, vTexCoord);"
+                                   " vec4 texel2 = texture2D(texture1, vTexCoord);"
+                                   " float a1 = unpack(texel1);"
+                                   " float a2 = unpack(texel2);"
+                                   " gl_FragColor = pack(a1 + a2);"
+                                   "}";
 
     gpgpu_build_program(RegularVShader, fragmentSource);
 
@@ -141,15 +204,28 @@ int GPGPU_API gpgpu_arrayAddition(int* a1, int* a2, int len, int* res)
     // finally draw it
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+    //////////
     // magic happens and the data is now ready
     // poof!
     //////////
 
-    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, res);
+    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    // convert from unsigned bytes back to the original format (float?)
+    res = (float*)buffer;
+    printf("RAW contents after addition: \n");
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    {
+        printf("%d ", buffer[i]);
+        if (i % (4 * WIDTH) == 0)
+            printf("\n");
+    }
+    printf("\n");
 
+    free(buffer);
     return ret;
 bail:
     // TODO: what should be released upon failure?
+    free(buffer);
     return ret;
 }
 
@@ -307,7 +383,7 @@ static int gpgpu_make_FBO(int w, int h)
     return ret;
 }
 
-static void gpgpu_make_texture(int* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
+static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
 {
     glGenTextures(1, texId);
     glBindTexture(GL_TEXTURE_2D, *texId);
@@ -317,7 +393,7 @@ static void gpgpu_make_texture(int* buffer, int w, int h, GLuint* texId) //TODO:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, buffer);
 }
 
 static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)

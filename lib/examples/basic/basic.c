@@ -9,23 +9,32 @@ int main()
         return 0;
     }
 
-    // create two int arrays
-    int* a1 = malloc(WIDTH * HEIGHT * sizeof(int));
-    int* a2 = malloc(WIDTH * HEIGHT * sizeof(int));
-    int* res = malloc(WIDTH * HEIGHT * sizeof(int));
+    // create two float arrays
+    float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* a2 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
 
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
         a1[i] = a2[i] = i;
     }
 
-    if (gpgpu_arrayAddition(a1, a2, WIDTH * HEIGHT, res) != 0)
+    printf("Data before computation: \n");
+    for (int i = 0; i < WIDTH * HEIGHT; ++i)
+    {
+        printf("%.1f ", a1[i]);
+        if (i % WIDTH == 0)
+            printf("\n");
+    }
+    printf("\n");
+
+    if (gpgpu_arrayAddition(a1, a2, res) != 0)
         printf("Could not do the array addition\n");
 
     printf("Contents after addition: \n");
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
-        printf("%d ", res[i]);
+        printf("%.1f ", res[i]);
         if (i % WIDTH == 0)
             printf("\n");
     }
