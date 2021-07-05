@@ -16,6 +16,7 @@ find_package(OpenGLES2 REQUIRED)
 
 add_library(GPGPU_GLES STATIC
     ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_gles.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/debug.c
 )
 
 # add alias to use it as GPGPU_GLES::GPGPU_GLES
@@ -26,6 +27,8 @@ target_include_directories(GPGPU_GLES
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${EGL_INCLUDE_DIR}> # need it only once
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/include
 )
 
 target_link_libraries(GPGPU_GLES

@@ -1,25 +1,6 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-
-#include <fcntl.h>
-#include <gbm/gbm.h>
-
-#include <EGL/egl.h>
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/eglext.h>
-#include <GLES2/gl2.h> // what about GLES3?
-
-#define GPGPU_API // just a marker
-
-#define DEBUG 0
-
-// TODO: this needs tweaking
-#define WIDTH 4
-#define HEIGHT 4
+#include "defines.h"
 
 // the geometry is scaled to a square 2x2 from (-1,-1) to (1,1)
 static const float gpgpu_geometry[20] = {
@@ -71,7 +52,3 @@ static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragme
 static void gpgpu_add_attribute(const char* name, int size, int stride, int offset);
 static void gpgpu_add_uniform(const char* name, int value, const char* type);
 
-// private logging functions
-static void gpgpu_report_framebuffer_status(int ret);
-void dumpEGLconfig(EGLConfig *EGLConfig, EGLDisplay display);
-static int gpgpu_report_glError(GLenum error);
