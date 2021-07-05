@@ -169,7 +169,7 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
                                    " exponent += 2.0 * texel.a - 127.0;"
                                    ""
                                    " mantissa = texel.b * 65536.0 + texel.g * 256.0 + texel.r;"
-                                   " value = sgn * exp2(exponent) * (1.0 + mantissa * exp2(-23.0));"
+                                   " value = pow(-1.0, sgn) * exp2(exponent) * (1.0 + mantissa * exp2(-23.0));"
                                    ""
                                    " return value;"
                                    "}"
@@ -178,10 +178,9 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
                                    "{"
                                    " vec4 texel1 = texture2D(texture0, vTexCoord);"
                                    " vec4 texel2 = texture2D(texture1, vTexCoord);"
-                                   //" float a1 = unpack(texel1);"
-                                   //" float a2 = unpack(texel2);"
-                                   //" gl_FragColor = pack(a1 + a2);"
-                                   " gl_FragColor = texel1;"
+                                   " float a1 = unpack(texel1 * 255.0);" // need to rescale it before?
+                                   " float a2 = unpack(texel2 * 255.0);"
+                                   " gl_FragColor = pack(a1 + a2);"
                                    "}";
 
     gpgpu_build_program(RegularVShader, fragmentSource);
