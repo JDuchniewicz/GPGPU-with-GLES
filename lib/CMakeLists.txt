@@ -16,6 +16,7 @@ find_package(OpenGLES2 REQUIRED)
 
 add_library(GPGPU_GLES STATIC
     ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_gles.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_int.c
     ${CMAKE_CURRENT_LIST_DIR}/src/debug.c
 )
 
