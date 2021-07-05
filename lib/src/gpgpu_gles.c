@@ -99,6 +99,15 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
     gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
     gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
 
+    printf("RAW contents before addition: \n");
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    {
+        printf("%d ", *((unsigned char*)a1 + i));
+        if ((i + 1)  % (4 * WIDTH) == 0)
+            printf("\n");
+    }
+    printf("\n");
+
     // inputs are float textures, output is a vec4 of unsigned bytes representing the float result of one texel
     // we need to extract the bits following the IEEE754 floating point format because GLES 2.0 does not have bit extraction
     const GLchar* fragmentSource = "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
@@ -172,7 +181,6 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
                                    //" float a1 = unpack(texel1);"
                                    //" float a2 = unpack(texel2);"
                                    //" gl_FragColor = pack(a1 + a2);"
-                                   //" gl_FragColor = vec4(vTexCoord, 0.0, 0.0);"
                                    " gl_FragColor = texel1;"
                                    "}";
 
@@ -225,7 +233,7 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
     // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
     for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 4)
     {
-        res[i / 4] = (float)(buffer[i]);
+        res[i / 4] = *((float*)buffer + i / 4);
     }
 
     free(buffer);
@@ -396,7 +404,7 @@ static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TOD
 {
     //unsigned char fakea1[4] = {0, 1, 2, 3};
     //unsigned char fakea1[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    unsigned char fakea1[64] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,\
+    //unsigned char fakea1[64] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,\
                                 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,\
                                 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,\
                                 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
@@ -409,7 +417,7 @@ static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TOD
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // openGL loads the texture from bottom to top, left to right so the data is in wrong order
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fakea1); // read floats, treat them as unsigned bytes
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer); // read floats, treat them as unsigned bytes
 }
 
 static void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)
