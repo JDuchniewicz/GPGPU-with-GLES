@@ -172,6 +172,7 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
                                    //" float a1 = unpack(texel1);"
                                    //" float a2 = unpack(texel2);"
                                    //" gl_FragColor = pack(a1 + a2);"
+                                   //" gl_FragColor = vec4(vTexCoord, 0.0, 0.0);"
                                    " gl_FragColor = texel1;"
                                    "}";
 
@@ -379,6 +380,8 @@ static int gpgpu_make_FBO(int w, int h)
     glGenFramebuffers(1, &fbId);
     glBindFramebuffer(GL_FRAMEBUFFER, fbId);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
+    // magic trick!
+    glViewport(0, 0, WIDTH, HEIGHT);
 
     ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (ret != GL_FRAMEBUFFER_COMPLETE)
@@ -391,7 +394,12 @@ static int gpgpu_make_FBO(int w, int h)
 
 static void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
 {
-    unsigned char fakea1[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    //unsigned char fakea1[4] = {0, 1, 2, 3};
+    //unsigned char fakea1[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    unsigned char fakea1[64] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,\
+                                16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,\
+                                32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,\
+                                48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
     glGenTextures(1, texId);
     glBindTexture(GL_TEXTURE_2D, *texId);
 

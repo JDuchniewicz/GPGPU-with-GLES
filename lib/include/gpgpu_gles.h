@@ -16,8 +16,8 @@
 #define GPGPU_API // just a marker
 
 // TODO: this needs tweaking
-#define WIDTH 2
-#define HEIGHT 2
+#define WIDTH 4
+#define HEIGHT 4
 
 // the geometry is scaled to a square 2x2 from (-1,-1) to (1,1)
 static const float gpgpu_geometry[20] = {
