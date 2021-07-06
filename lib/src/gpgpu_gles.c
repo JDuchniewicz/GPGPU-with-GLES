@@ -107,7 +107,6 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
 
     // inputs are float textures, output is a vec4 of unsigned bytes representing the float result of one texel
     // we need to extract the bits following the IEEE754 floating point format because GLES 2.0 does not have bit extraction
-
     gpgpu_build_program(REGULAR, ARRAY_ADD_FLOAT);
 
     // create the geometry to draw the texture on
@@ -169,10 +168,88 @@ bail:
     return ret;
 }
 
-int GPGPU_API gpgpu_firConvolution(int* data, int len, int* kernel, int size, int* res)
+// TODO: need figuring out a good width and height specification
+int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float* res)
 {
+    // if width != height abort? TODO:
+    int ret = 0;
+    unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
+    GLuint texId0, texId1;
+    gpgpu_make_texture(data, WIDTH, HEIGHT, &texId0);
+    gpgpu_make_texture(kernel, size, size, &texId1);
 
-    return 0;
+#if DEBUG
+    printf("RAW contents before addition: \n");
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    {
+        printf("%d ", *((unsigned char*)a1 + i));
+        if ((i + 1)  % (4 * WIDTH) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    gpgpu_build_program(REGULAR, FIR_CONV_FLOAT);
+
+    // create the geometry to draw the texture on
+    GLuint geometry;
+    glGenBuffers(1, &geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+
+    // setup the vertex position as the attribute of vertex shader
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
+    // do the actual computation
+    // bind textures to their respective texturing units
+    // add texture uniforms to fragment shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, texId1);
+    gpgpu_add_uniform("texture1", 1, "uniform1i");
+
+    // add the texture step =  1 / width
+    gpgpu_add_uniform("w", 1.0 / WIDTH, "uniform1f");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+    // finally draw it
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    //////////
+    // magic happens and the data is now ready
+    // poof!
+    //////////
+
+    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    // convert from unsigned bytes back to the original format (float?)
+
+#if DEBUG
+    printf("RAW contents after addition: \n");
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    {
+        printf("%d ", buffer[i]);
+        if ((i + 1)  % (4 * WIDTH) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 4)
+    {
+        res[i / 4] = *((float*)buffer + i / 4);
+    }
+
+bail:
+    free(buffer);
+    return ret;
 }
 
 int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)

@@ -10,5 +10,5 @@ int gpgpu_make_FBO(int w, int h);
 void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId);
 int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType);
 void gpgpu_add_attribute(const char* name, int size, int stride, int offset);
-void gpgpu_add_uniform(const char* name, int value, const char* type);
+void gpgpu_add_uniform(const char* name, float value, const char* type); // ints will convert to floats but not vice versa
 

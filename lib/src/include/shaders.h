@@ -33,7 +33,7 @@ static const struct VFileName vFileNames[] = {
 
 static const struct FFileName fFileNames[] = {
     { .type = ARRAY_ADD_FLOAT, .filename = "../shaders/array_add_float.fs" },
-    { .type = FIR_CONV_FLOAT,  .filename = "fir_conv_float.fs" },
+    { .type = FIR_CONV_FLOAT,  .filename = "../shaders/fir_conv_float.fs" },
     { .type = MAT_MULT_FLOAT,  .filename = "mat_mult_float.fs" },
 };
 

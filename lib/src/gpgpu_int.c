@@ -188,7 +188,7 @@ void gpgpu_add_attribute(const char* name, int size, int stride, int offset)
     glVertexAttribPointer(loc, size, GL_FLOAT, GL_FALSE, stride, (GLvoid*)(offset * sizeof(float)));
 }
 
-void gpgpu_add_uniform(const char* name, int value, const char* type)
+void gpgpu_add_uniform(const char* name, float value, const char* type)
 {
     int loc = glGetUniformLocation(g_helper.ESShaderProgram, name);
     if (strcmp(type, "uniform1f") == 0)
