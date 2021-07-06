@@ -106,15 +106,19 @@ void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer); // read floats, treat them as unsigned bytes
 }
 
-void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSource)
+int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType)
 {
-    int infoLen = 0;
+    int ret = 0, infoLen = 0;
+    GLchar* vShader = NULL;
+    GLchar* fShader = NULL;
+    if (gpgpu_load_shaders(vertType, fragType, &vShader, &fShader) != 0)
+        ERR("Could not load shader code");
+
     g_helper.ESShaderProgram = glCreateProgram();
-    // TODO: shader management code (storing them in files etc)
     // compile shaders
     // vertex
     GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vertexSource, NULL);
+    glShaderSource(vertex, 1, &vShader, NULL);
     glCompileShader(vertex);
 
     glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &infoLen);
@@ -124,11 +128,12 @@ void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSourc
         char outLog[infoLen];
         glGetShaderInfoLog(vertex, infoLen, NULL, outLog);
         printf("VERTEX:\n %s\n", outLog);
+        ERR("Could not create Vertex shader");
     }
 
     // fragment
     GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fragmentSource, NULL);
+    glShaderSource(fragment, 1, &fShader, NULL);
     glCompileShader(fragment);
 
     glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &infoLen);
@@ -138,6 +143,7 @@ void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSourc
         char outLog[infoLen];
         glGetShaderInfoLog(fragment, infoLen, NULL, outLog);
         printf("FRAGMENT:\n %s\n", outLog);
+        ERR("Could not create Fragment shader");
     }
 
     // attach them
@@ -157,12 +163,20 @@ void gpgpu_build_program(const GLchar* vertexSource, const GLchar* fragmentSourc
             char outLog[infoLen];
             glGetProgramInfoLog(g_helper.ESShaderProgram, infoLen, NULL, outLog);
             printf("PROGRAM:\n %s\n", outLog);
+            ERR("Could not link shader");
         }
     }
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
     glUseProgram(g_helper.ESShaderProgram);
+
+bail:
+    if (vShader)
+        free(vShader);
+    if (fShader)
+        free(fShader);
+    return ret;
 }
 
 void gpgpu_add_attribute(const char* name, int size, int stride, int offset)

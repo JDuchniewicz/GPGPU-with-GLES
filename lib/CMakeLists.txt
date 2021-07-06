@@ -18,6 +18,7 @@ add_library(GPGPU_GLES STATIC
     ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_gles.c
     ${CMAKE_CURRENT_LIST_DIR}/src/gpgpu_int.c
     ${CMAKE_CURRENT_LIST_DIR}/src/debug.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/shaders.c
 )
 
 # add alias to use it as GPGPU_GLES::GPGPU_GLES

@@ -10,14 +10,6 @@ static const float gpgpu_geometry[20] = {
      1.0, -1.0, 0.0, 1.0, 0.0  // bottom right
 };
 
-static const GLchar* RegularVShader = "attribute vec3 position;\n"
-                                      "attribute vec2 texCoord;\n"
-                                      "varying highp vec2 vTexCoord;\n"
-                                      "void main(void) {\n"
-                                      "gl_Position = vec4(position, 1.0);\n"
-                                      "vTexCoord = texCoord;\n"
-                                      "}\n";
-
 int GPGPU_API gpgpu_init();
 int GPGPU_API gpgpu_deinit();
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res);

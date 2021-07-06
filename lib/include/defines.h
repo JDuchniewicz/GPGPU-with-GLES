@@ -23,7 +23,7 @@
 
 #define ERR(m) { \
     ret = -1; \
-    fprintf(stderr, "ERROR in line %d: %s\n", __LINE__, m); \
+    fprintf(stderr, "ERROR in file %s line %d: %s\n", __FILE__ ,__LINE__, m); \
     goto bail; \
 }
 
