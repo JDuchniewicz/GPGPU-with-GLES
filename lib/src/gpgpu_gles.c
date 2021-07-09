@@ -34,7 +34,7 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (gpgpu_check_egl_extensions() != 0)
         ERR("Not enough extensions supported");
 
-    if (gpgpu_find_matching_config(&g_helper.config, EGL_FORMAT_RGBA_8888_KHR) != 0) //GBM_FORMAT_ARGB8888) != 0)
+    if (gpgpu_find_matching_config(&g_helper.config, 9) != 0) //GBM_FORMAT_ARGB8888) != 0) // 9 is RGBA8888 on BBB
         ERR("Could not find matching config");
 
     if (eglBindAPI(EGL_OPENGL_ES_API) == 0)

@@ -48,7 +48,7 @@ int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
     {
         EGLint format;
 
-        if (!eglGetConfigAttrib(g_helper.display, configs[i], EGL_NATIVE_VISUAL_ID, &format))
+        if (!eglGetConfigAttrib(g_helper.display, configs[i], EGL_CONFIG_ID, &format)) // TODO: should be matched in a more robust way
             ERR("Could not iterate through configs");
 
 	printf("EGL format: %d Seeked: %d\n", format, gbm_format);
