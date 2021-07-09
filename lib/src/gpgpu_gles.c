@@ -14,15 +14,15 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     int ret = 0;
     int major, minor;
 
-    g_helper.gbd_fd = open("/dev/dri/renderD128", O_RDWR);
-    if (g_helper.gbd_fd <= 0)
-        ERR("Could not open device");
+    //g_helper.gbd_fd = open("/dev/dri/renderD128", O_RDWR);
+    //if (g_helper.gbd_fd <= 0)
+    //    ERR("Could not open device");
 
-    g_helper.gbm = gbm_create_device(g_helper.gbd_fd);
-    if (!g_helper.gbm)
-        ERR("Could not create GBM device");
+    //g_helper.gbm = gbm_create_device(g_helper.gbd_fd);
+    //if (!g_helper.gbm)
+    //    ERR("Could not create GBM device");
 
-    g_helper.display = eglGetDisplay((EGLNativeDisplayType)g_helper.gbm);
+    g_helper.display = eglGetDisplay((EGLNativeDisplayType)0);
     if (!g_helper.display)
         ERR("Could not create display");
 
@@ -34,17 +34,17 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     if (gpgpu_check_egl_extensions() != 0)
         ERR("Not enough extensions supported");
 
-    if (gpgpu_find_matching_config(&g_helper.config, GBM_FORMAT_ARGB8888) != 0)
+    if (gpgpu_find_matching_config(&g_helper.config, EGL_FORMAT_RGBA_8888_KHR) != 0) //GBM_FORMAT_ARGB8888) != 0)
         ERR("Could not find matching config");
 
     if (eglBindAPI(EGL_OPENGL_ES_API) == 0)
         ERR("Could not bind the API");
 
-    g_helper.gbm_surface = gbm_surface_create(g_helper.gbm, width, height, GBM_FORMAT_ARGB8888, GBM_BO_USE_RENDERING);
-    if (!g_helper.gbm_surface)
-        ERR("Could not create GBM surface");
+    //g_helper.gbm_surface = gbm_surface_create(g_helper.gbm, width, height, GBM_FORMAT_ARGB8888, GBM_BO_USE_RENDERING);
+    //if (!g_helper.gbm_surface)
+    //    ERR("Could not create GBM surface");
 
-    g_helper.surface = eglCreateWindowSurface(g_helper.display, g_helper.config, g_helper.gbm_surface, NULL);
+    g_helper.surface = eglCreateWindowSurface(g_helper.display, g_helper.config, (EGLNativeWindowType)0, NULL); //g_helper.gbm_surface, NULL);
     if (g_helper.surface == EGL_NO_SURFACE)
         ERR("Could not create EGL surface");
 
@@ -81,8 +81,8 @@ int GPGPU_API gpgpu_deinit()
     eglDestroySurface(g_helper.display, g_helper.surface);
     eglDestroyContext(g_helper.display, g_helper.context);
     eglTerminate(g_helper.display);
-    gbm_device_destroy(g_helper.gbm);
-    close(g_helper.gbd_fd);
+    //gbm_device_destroy(g_helper.gbm);
+    //close(g_helper.gbd_fd);
     return 0;
 }
 
