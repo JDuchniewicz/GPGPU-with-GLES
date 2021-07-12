@@ -92,7 +92,7 @@ int gpgpu_make_FBO(int w, int h)
     return ret;
 }
 
-void gpgpu_make_texture(float* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
+void gpgpu_make_texture(void* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?
 {
     glGenTextures(1, texId);
     glBindTexture(GL_TEXTURE_2D, *texId);
