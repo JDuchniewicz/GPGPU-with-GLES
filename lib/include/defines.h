@@ -15,7 +15,7 @@
 
 #define GPGPU_API // just a marker
 
-#define DEBUG 0
+#define DEBUG 1
 
 // TODO: this needs tweaking
 #define WIDTH 4

@@ -182,7 +182,7 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     printf("RAW contents before addition: \n");
     for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
     {
-        printf("%d ", *((unsigned char*)a1 + i));
+        printf("%d ", *((unsigned char*)data + i));
         if ((i + 1)  % (4 * WIDTH) == 0)
             printf("\n");
     }
@@ -300,7 +300,7 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     glBindTexture(GL_TEXTURE_2D, texId1);
     gpgpu_add_uniform("texture1", 1, "uniform1i");
 
-    gpgpu_add_uniform("fraction_divider;", fraction_divider, "uniform1i");
+    gpgpu_add_uniform("fraction_divider", fraction_divider, "uniform1i");
 
     glActiveTexture(GL_TEXTURE0);
 
