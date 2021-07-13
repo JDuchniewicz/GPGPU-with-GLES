@@ -34,8 +34,11 @@ void main(void)
     vec4 texel1 = texture2D(texture0, vTexCoord);
     vec4 texel2 = texture2D(texture1, vTexCoord);
     float a1 = fixed_to_float(vec2(texel1.r, texel1.g));
+    float a2 = fixed_to_float(vec2(texel1.b, texel1.a));
     float b1 = fixed_to_float(vec2(texel2.r, texel2.g));
+    float b2 = fixed_to_float(vec2(texel2.b, texel2.a));
     a1 += b1;
-    gl_FragColor = float_to_fixed(a1);
+    a2 += b2;
+    gl_FragColor = vec4(float_to_fixed(a1), float_to_fixed(a2));
 }
 
