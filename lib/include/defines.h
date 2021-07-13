@@ -15,11 +15,7 @@
 
 #define GPGPU_API // just a marker
 
-#define DEBUG 1
-
-// TODO: this needs tweaking
-#define WIDTH 4
-#define HEIGHT 4
+#define DEBUG 1 // set it via debug build flag
 
 #define ERR(m) { \
     ret = -1; \
@@ -30,8 +26,6 @@
 typedef struct
 {
 	GLint ESShaderProgram;
-	GLbyte* FShaderSource; //the shader programs are specified as strings and are loaded depending on the program (maybe should be binary blobs in the final impl)
-	GLbyte* VShaderSource; //ditto
 	EGLDisplay display;
 	EGLConfig config;
 	EGLContext context;
@@ -39,4 +33,6 @@ typedef struct
     struct gbm_device* gbm;
     struct gbm_surface* gbm_surface;
     int32_t gbd_fd;
+    int height;
+    int width;
 } GLHelper;

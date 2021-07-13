@@ -10,7 +10,7 @@ static const float gpgpu_geometry[20] = {
      1.0, -1.0, 0.0, 1.0, 0.0  // bottom right
 };
 
-int GPGPU_API gpgpu_init();
+int GPGPU_API gpgpu_init(int width, int height);
 int GPGPU_API gpgpu_deinit();
 // FLOAT FUNCTIONS
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res);

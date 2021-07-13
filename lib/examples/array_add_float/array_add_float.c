@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "gpgpu_gles.h"
 
+#define HEIGHT 4
+#define WIDTH HEIGHT
+
 int main()
 {
-    if (gpgpu_init() != 0)
+    if (gpgpu_init(HEIGHT, WIDTH) != 0)
     {
         printf("Could not initialize the API\n");
         return 0;

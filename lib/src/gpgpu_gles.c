@@ -9,10 +9,13 @@ GLHelper g_helper;
 ////* API FUNCTIONS *////
 /////////////////////////
 
-int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
+int GPGPU_API gpgpu_init(int height, int width)
 {
     int ret = 0;
     int major, minor;
+
+    g_helper.height = height;
+    g_helper.width = width;
 
 #ifndef BEAGLE
     g_helper.gbd_fd = open("/dev/dri/renderD128", O_RDWR);
@@ -79,7 +82,7 @@ int GPGPU_API gpgpu_init(uint32_t height, uint32_t width)
     eglQueryContext(g_helper.display, g_helper.context, EGL_CONTEXT_CLIENT_VERSION, &version);
     printf("EGL Context version: %d\n", version);
 
-    if (gpgpu_make_FBO(WIDTH, HEIGHT) != 0)
+    if (gpgpu_make_FBO() != 0)
         ERR("Could not create FBO");
 
     return ret;
@@ -106,17 +109,17 @@ int GPGPU_API gpgpu_deinit()
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
 {
     int ret = 0;
-    unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
+    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     GLuint texId0, texId1;
-    gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
-    gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
+    gpgpu_make_texture(a1, g_helper.width, g_helper.height, &texId0);
+    gpgpu_make_texture(a2, g_helper.width, g_helper.height, &texId1);
 
 #if DEBUG
     printf("RAW contents before addition: \n");
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
     {
         printf("%d ", *((unsigned char*)a1 + i));
-        if ((i + 1)  % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * g_helper.width) == 0)
             printf("\n");
     }
     printf("\n");
@@ -159,22 +162,22 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
     // poof!
     //////////
 
-    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    glReadPixels(0, 0, g_helper.width, g_helper.height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     // convert from unsigned bytes back to the original format (float?)
 
 #if DEBUG
     printf("RAW contents after addition: \n");
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
     {
         printf("%d ", buffer[i]);
-        if ((i + 1)  % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * g_helper.width) == 0)
             printf("\n");
     }
     printf("\n");
 #endif
 
     // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 4)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
     {
         res[i / 4] = *((float*)buffer + i / 4);
     }
@@ -190,17 +193,17 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
 {
     // if width != height abort? TODO:
     int ret = 0;
-    unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
+    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     GLuint texId0, texId1;
-    gpgpu_make_texture(data, WIDTH, HEIGHT, &texId0);
+    gpgpu_make_texture(data, g_helper.width, g_helper.height, &texId0);
     gpgpu_make_texture(kernel, size, size, &texId1);
 
 #if DEBUG
     printf("RAW contents before addition: \n");
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
     {
         printf("%d ", *((unsigned char*)data + i));
-        if ((i + 1)  % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * g_helper.width) == 0)
             printf("\n");
     }
     printf("\n");
@@ -229,7 +232,7 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     gpgpu_add_uniform("texture1", 1, "uniform1i");
 
     // add the texture step =  1 / width
-    gpgpu_add_uniform("w", 1.0 / WIDTH, "uniform1f");
+    gpgpu_add_uniform("w", 1.0 / g_helper.width, "uniform1f");
 
     glActiveTexture(GL_TEXTURE0);
 
@@ -244,22 +247,22 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     // poof!
     //////////
 
-    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    glReadPixels(0, 0, g_helper.width, g_helper.height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     // convert from unsigned bytes back to the original format (float?)
 
 #if DEBUG
     printf("RAW contents after addition: \n");
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
     {
         printf("%d ", buffer[i]);
-        if ((i + 1)  % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * g_helper.width) == 0)
             printf("\n");
     }
     printf("\n");
 #endif
 
     // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 4)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
     {
         res[i / 4] = *((float*)buffer + i / 4);
     }
@@ -279,17 +282,17 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
 {
     int ret = 0;
     int fraction_divider = 1 << fractional_bits;
-    unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
+    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     GLuint texId0, texId1;
-    gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
-    gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
+    gpgpu_make_texture(a1, g_helper.width, g_helper.height, &texId0);
+    gpgpu_make_texture(a2, g_helper.width, g_helper.height, &texId1);
 
 #if DEBUG
     printf("RAW contents before addition: \n");
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
     {
         printf("%d ", *((unsigned char*)a1 + i));
-        if ((i + 1)  % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * g_helper.width) == 0)
             printf("\n");
     }
     printf("\n");
@@ -332,22 +335,22 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     // poof!
     //////////
 
-    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    glReadPixels(0, 0, g_helper.width, g_helper.height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     // convert from unsigned bytes back to the original format
 
 #if DEBUG
     printf("RAW contents after addition: \n");
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
     {
         printf("%d ", buffer[i]);
-        if ((i + 1)  % (4 * WIDTH) == 0)
+        if ((i + 1)  % (4 * g_helper.width) == 0)
             printf("\n");
     }
     printf("\n");
 #endif
 
     // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 2)
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 2)
     {
         res[i / 2] = *((uint16_t*)buffer + i / 2);
     }
@@ -355,5 +358,4 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
 bail:
     free(buffer);
     return ret;
-
 }

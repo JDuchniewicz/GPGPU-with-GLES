@@ -77,21 +77,21 @@ bail:
     return ret;
 }
 
-int gpgpu_make_FBO(int w, int h)
+int gpgpu_make_FBO()
 {
     int ret = 0;
     GLuint texId, fbId;
 
     glGenTextures(1, &texId);
     glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0); // allows for floating-point buffer in ES2.0 (format should be RGBA32F)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, g_helper.width, g_helper.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0); // allows for floating-point buffer in ES2.0 (format should be RGBA32F)
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenFramebuffers(1, &fbId);
     glBindFramebuffer(GL_FRAMEBUFFER, fbId);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
     // magic trick!
-    glViewport(0, 0, WIDTH, HEIGHT);
+    glViewport(0, 0, g_helper.width, g_helper.height);
 
     ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (ret != GL_FRAMEBUFFER_COMPLETE)
@@ -137,11 +137,11 @@ int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType)
         // allocate on stack for now
         char outLog[infoLen];
         glGetShaderInfoLog(vertex, infoLen, NULL, outLog);
-	if (strcmp(outLog, "Success.\n") != 0)
-	{
-		printf("VERTEX:\n %s\n", outLog);
-		ERR("Could not create Vertex shader");
-	}
+        if (strcmp(outLog, "Success.\n") != 0)
+        {
+            printf("VERTEX:\n %s\n", outLog);
+            ERR("Could not create Vertex shader");
+        }
     }
 
     // fragment
@@ -155,11 +155,11 @@ int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType)
         // allocate on stack for now
         char outLog[infoLen];
         glGetShaderInfoLog(fragment, infoLen, NULL, outLog);
-	if (strcmp(outLog, "Success.\n") != 0)
-	{
-		printf("FRAGMENT:\n %s\n", outLog);
-		ERR("Could not create Fragment shader");
-	}
+        if (strcmp(outLog, "Success.\n") != 0)
+        {
+            printf("FRAGMENT:\n %s\n", outLog);
+            ERR("Could not create Fragment shader");
+        }
     }
 
     // attach them
