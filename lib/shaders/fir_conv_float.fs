@@ -76,11 +76,17 @@ void main(void)
     {
         for (int j = -spread; j <= spread; ++j)
         {
-            float outside = float((vTexCoord.x + float(j) * w) > 1.0 ||
-                           (vTexCoord.x + float(j) * w) < 0.0 ||
-                           (vTexCoord.y + float(i) * w) > 1.0 ||
-                           (vTexCoord.y + float(i) * w) < 0.0);
-            value = mix(texture2D(texture0, vTexCoord + vec2(float(j) * w, float(i) * w)), vec4(0), outside);
+            if ((vTexCoord.x + float(j) * w) > 1.0 ||
+                (vTexCoord.x + float(j) * w) < 0.0 ||
+                (vTexCoord.y + float(i) * w) > 1.0 ||
+                (vTexCoord.y + float(i) * w) < 0.0)
+            {
+                value = vec4(0.0);
+            }
+            else
+            {
+                value = texture2D(texture0, vTexCoord + vec2(float(j) * w, float(i) * w));
+            }
             samp[(i + spread) * kSpan + (j + spread)] = value;
         }
     }
