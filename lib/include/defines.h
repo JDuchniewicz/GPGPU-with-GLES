@@ -15,7 +15,7 @@
 
 #define GPGPU_API // just a marker
 
-#define DEBUG 1 // set it via debug build flag
+#define DEBUG 0 // set it via debug build flag
 
 #define ERR(m) { \
     ret = -1; \
