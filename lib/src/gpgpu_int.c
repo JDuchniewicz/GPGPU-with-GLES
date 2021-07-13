@@ -29,7 +29,7 @@ int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
 
     EGLint count;
     static const EGLint config_attrs[] = {
-        EGL_BUFFER_SIZE,        32,
+        EGL_BUFFER_SIZE,        16,
         EGL_DEPTH_SIZE,         EGL_DONT_CARE,
         EGL_STENCIL_SIZE,       EGL_DONT_CARE,
         EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES2_BIT,
@@ -128,8 +128,11 @@ int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType)
         // allocate on stack for now
         char outLog[infoLen];
         glGetShaderInfoLog(vertex, infoLen, NULL, outLog);
-        printf("VERTEX:\n %s\n", outLog);
-        ERR("Could not create Vertex shader");
+	if (strcmp(outLog, "Success.\n") != 0)
+	{
+		printf("VERTEX:\n %s\n", outLog);
+		ERR("Could not create Vertex shader");
+	}
     }
 
     // fragment
@@ -143,8 +146,11 @@ int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType)
         // allocate on stack for now
         char outLog[infoLen];
         glGetShaderInfoLog(fragment, infoLen, NULL, outLog);
-        printf("FRAGMENT:\n %s\n", outLog);
-        ERR("Could not create Fragment shader");
+	if (strcmp(outLog, "Success.\n") != 0)
+	{
+		printf("FRAGMENT:\n %s\n", outLog);
+		ERR("Could not create Fragment shader");
+	}
     }
 
     // attach them
