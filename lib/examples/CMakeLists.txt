@@ -1,6 +1,7 @@
 set(GPGPU_GLES_EXAMPLES
     basic
     fir_conv_float
+    array_add_fixed16
 )
 
 foreach(EXAMPLE ${GPGPU_GLES_EXAMPLES})
