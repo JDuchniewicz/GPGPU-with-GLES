@@ -18,6 +18,7 @@ float fixed_to_float(vec2 inp)
     return float(n / float(fraction_divider));
 }
 
+// TODO: remap rgb
 vec2 float_to_fixed(float inp)
 {
     vec2 ret = vec2(0);
@@ -29,7 +30,7 @@ vec2 float_to_fixed(float inp)
 
 void main(void)
 {
-    // one texel is 2 16-bit fixed-point 11.5 values (g, r) (b, a)
+    // one texel is 1 16-bit fixed-point value
     vec4 texel1 = texture2D(texture0, vTexCoord);
     vec4 texel2 = texture2D(texture1, vTexCoord);
     float a1 = fixed_to_float(vec2(texel1.r, texel1.g));
