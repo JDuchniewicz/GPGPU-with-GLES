@@ -258,8 +258,9 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
+int GPGPU_API gpgpu_arrayAddition_fixed16_argb8888(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
 {
+    // TODO: add guards to bail out early if format is wrong?
     int ret = 0;
     int fraction_divider = 1 << fractional_bits;
     unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
@@ -278,7 +279,7 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     printf("\n");
 #endif
 
-    gpgpu_build_program(REGULAR, ARRAY_ADD_FIXED16);
+    gpgpu_build_program(REGULAR, ARRAY_ADD_FIXED16_ARGB8888);
 
     // create the geometry to draw the texture on
     GLuint geometry;

@@ -29,7 +29,7 @@ int main()
     }
     printf("\n");
 
-    if (gpgpu_arrayAddition_fixed16(a1, a2, res, 5) != 0)
+    if (gpgpu_arrayAddition_fixed16_argb8888(a1, a2, res, 5) != 0)
         printf("Could not do the array addition\n");
 
     printf("Contents after addition: \n");
