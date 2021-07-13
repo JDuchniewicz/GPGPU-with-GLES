@@ -354,10 +354,10 @@ int GPGPU_API gpgpu_arrayAddition_fixed16_rgb565(uint16_t* a1, uint16_t* a2, uin
 
 #if DEBUG
     printf("RAW contents before addition: \n");
-    for (int i = 0; i < 2 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
     {
         printf("%d ", *((unsigned char*)a1 + i));
-        if ((i + 1)  % (2 * WIDTH) == 0)
+        if ((i + 1)  % (4 * WIDTH) == 0)
             printf("\n");
     }
     printf("\n");
@@ -405,17 +405,17 @@ int GPGPU_API gpgpu_arrayAddition_fixed16_rgb565(uint16_t* a1, uint16_t* a2, uin
 
 #if DEBUG
     printf("RAW contents after addition: \n");
-    for (int i = 0; i < 2 * WIDTH * HEIGHT; ++i)
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; ++i)
     {
         printf("%d ", buffer[i]);
-        if ((i + 1)  % (2 * WIDTH) == 0)
+        if ((i + 1)  % (4 * WIDTH) == 0)
             printf("\n");
     }
     printf("\n");
 #endif
 
     // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 2 * WIDTH * HEIGHT; i += 2)
+    for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 2)
     {
         res[i / 2] = *((uint16_t*)buffer + i / 2);
     }
