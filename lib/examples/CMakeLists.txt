@@ -1,8 +1,7 @@
 set(GPGPU_GLES_EXAMPLES
     array_add_float
     fir_conv_float
-    array_add_fixed16_argb8888
-    array_add_fixed16_rgb565
+    array_add_fixed16
 )
 
 foreach(EXAMPLE ${GPGPU_GLES_EXAMPLES})
