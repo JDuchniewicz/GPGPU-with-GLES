@@ -21,6 +21,10 @@ add_library(GPGPU_GLES STATIC
     ${CMAKE_CURRENT_LIST_DIR}/src/shaders.c
 )
 
+if(CMAKE_HOST_SYSTEM_VERSION MATCHES ".*-ti-.*")
+    add_compile_definitions(BEAGLE)
+endif()
+
 # add alias to use it as GPGPU_GLES::GPGPU_GLES
 add_library(GPGPU_GLES::GPGPU_GLES ALIAS GPGPU_GLES)
 

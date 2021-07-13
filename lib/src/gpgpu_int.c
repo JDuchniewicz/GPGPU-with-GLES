@@ -29,7 +29,11 @@ int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
 
     EGLint count;
     static const EGLint config_attrs[] = {
+#ifndef BEAGLE
+        EGL_BUFFER_SIZE,        32,
+#else
         EGL_BUFFER_SIZE,        16,
+#endif
         EGL_DEPTH_SIZE,         EGL_DONT_CARE,
         EGL_STENCIL_SIZE,       EGL_DONT_CARE,
         EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES2_BIT,
@@ -48,8 +52,13 @@ int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
     {
         EGLint format;
 
+#ifndef BEAGLE
+        if (!eglGetConfigAttrib(g_helper.display, configs[i], EGL_NATIVE_VISUAL_ID, &format))
+            ERR("Could not iterate through configs");
+#else
         if (!eglGetConfigAttrib(g_helper.display, configs[i], EGL_CONFIG_ID, &format)) // TODO: should be matched in a more robust way
             ERR("Could not iterate through configs");
+#endif
 
 	printf("EGL format: %d Seeked: %d\n", format, gbm_format);
         dumpEGLconfig(configs[i], g_helper.display);
