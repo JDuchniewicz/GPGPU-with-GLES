@@ -258,8 +258,9 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
+int GPGPU_API gpgpu_arrayAddition_fixed16_argb8888(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
 {
+    // TODO: add guards to bail out early if format is wrong?
     int ret = 0;
     int fraction_divider = 1 << fractional_bits;
     unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
@@ -278,7 +279,7 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     printf("\n");
 #endif
 
-    gpgpu_build_program(REGULAR, ARRAY_ADD_FIXED16);
+    gpgpu_build_program(REGULAR, ARRAY_ADD_FIXED16_ARGB8888);
 
     // create the geometry to draw the texture on
     GLuint geometry;
@@ -331,6 +332,90 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
 
     // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
     for (int i = 0; i < 4 * WIDTH * HEIGHT; i += 2)
+    {
+        res[i / 2] = *((uint16_t*)buffer + i / 2);
+    }
+
+bail:
+    free(buffer);
+    return ret;
+
+}
+
+int GPGPU_API gpgpu_arrayAddition_fixed16_rgb565(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
+{
+    // TODO: add guards to bail out early if format is wrong?
+    int ret = 0;
+    int fraction_divider = 1 << fractional_bits;
+    unsigned char* buffer = malloc(4 * WIDTH * HEIGHT);
+    GLuint texId0, texId1;
+    gpgpu_make_texture(a1, WIDTH, HEIGHT, &texId0);
+    gpgpu_make_texture(a2, WIDTH, HEIGHT, &texId1);
+
+#if DEBUG
+    printf("RAW contents before addition: \n");
+    for (int i = 0; i < 2 * WIDTH * HEIGHT; ++i)
+    {
+        printf("%d ", *((unsigned char*)a1 + i));
+        if ((i + 1)  % (2 * WIDTH) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    gpgpu_build_program(REGULAR, ARRAY_ADD_FIXED16_RGB565);
+
+    // create the geometry to draw the texture on
+    GLuint geometry;
+    glGenBuffers(1, &geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+
+    // setup the vertex position as the attribute of vertex shader
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
+    // do the actual computation
+    // bind textures to their respective texturing units
+    // add texture uniforms to fragment shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, texId1);
+    gpgpu_add_uniform("texture1", 1, "uniform1i");
+
+    gpgpu_add_uniform("fraction_divider", fraction_divider, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+    // finally draw it
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    //////////
+    // magic happens and the data is now ready
+    // poof!
+    //////////
+
+    glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    // convert from unsigned bytes back to the original format
+
+#if DEBUG
+    printf("RAW contents after addition: \n");
+    for (int i = 0; i < 2 * WIDTH * HEIGHT; ++i)
+    {
+        printf("%d ", buffer[i]);
+        if ((i + 1)  % (2 * WIDTH) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
+    for (int i = 0; i < 2 * WIDTH * HEIGHT; i += 2)
     {
         res[i / 2] = *((uint16_t*)buffer + i / 2);
     }

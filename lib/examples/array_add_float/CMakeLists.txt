@@ -6,6 +6,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 find_package(GPGPU_GLES REQUIRED)
 
 add_executable(GPGPUGLESBasic
-        ${CMAKE_CURRENT_LIST_DIR}/basic.c)
+        ${CMAKE_CURRENT_LIST_DIR}/array_add_float.c)
 
 target_link_libraries(GPGPUGLESBasic PRIVATE GPGPU_GLES::GPGPU_GLES)

@@ -18,5 +18,6 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
 int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 // 16-bit functions
 // 16-bit fixed-point functions
-int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits);
+int GPGPU_API gpgpu_arrayAddition_fixed16_argb8888(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits);
+int GPGPU_API gpgpu_arrayAddition_fixed16_rgb565(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits);
 
