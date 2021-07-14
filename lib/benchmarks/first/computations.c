@@ -17,8 +17,8 @@ void array_add_float()
     // create two float arrays
     float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
     float* a2 = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res;
+    float* res2;
 
     generate_data_f(a1, a2);
 
@@ -28,7 +28,7 @@ void array_add_float()
 #endif
 
     start = clock();
-    if (gpgpu_arrayAddition(a1, a2, res) != 0)
+    if (gpgpu_arrayAddition(a1, a2, &res) != 0)
         printf("Could not do the array addition\n");
 
     gpu_time = clock() - start;
@@ -63,8 +63,8 @@ void array_add_fixed16()
     // create two uint16 arrays (twice the size because we use half the memory)
     uint16_t* a1 = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
     uint16_t* a2 = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
-    uint16_t* res = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
-    uint16_t* res2 = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
+    uint16_t* res;
+    uint16_t* res2;
 
     generate_data_f16(a1, a2);
 
@@ -74,7 +74,7 @@ void array_add_fixed16()
 #endif
 
     start = clock();
-    if (gpgpu_arrayAddition_fixed16(a1, a2, res, 5) != 0)
+    if (gpgpu_arrayAddition_fixed16(a1, a2, &res, 5) != 0)
         printf("Could not do the array addition\n");
 
     gpu_time = clock() - start;

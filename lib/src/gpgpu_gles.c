@@ -106,7 +106,7 @@ int GPGPU_API gpgpu_deinit()
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
+int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float** res)
 {
     int ret = 0;
     unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
@@ -176,20 +176,16 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
     printf("\n");
 #endif
 
-    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
-    {
-        res[i / 4] = *((float*)buffer + i / 4);
-    }
+    *res = (float*)buffer;
 
+    return ret;
 bail:
     // TODO: what should be released upon failure?
     free(buffer);
     return ret;
 }
 
-// TODO: need figuring out a good width and height specification
-int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float* res)
+int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float** res)
 {
     // if width != height abort? TODO:
     int ret = 0;
@@ -261,12 +257,9 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     printf("\n");
 #endif
 
-    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
-    {
-        res[i / 4] = *((float*)buffer + i / 4);
-    }
+    *res = (float*)buffer;
 
+    return ret;
 bail:
     free(buffer);
     return ret;
@@ -278,7 +271,7 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
     return 0;
 }
 
-int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
+int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t** res, uint8_t fractional_bits)
 {
     int ret = 0;
     int fraction_divider = 1 << fractional_bits;
@@ -349,12 +342,9 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     printf("\n");
 #endif
 
-    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
-    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 2)
-    {
-        res[i / 2] = *((uint16_t*)buffer + i / 2);
-    }
+    *res = (uint16_t*)buffer;
 
+    return ret;
 bail:
     free(buffer);
     return ret;

@@ -13,10 +13,10 @@ static const float gpgpu_geometry[20] = {
 int GPGPU_API gpgpu_init(int width, int height);
 int GPGPU_API gpgpu_deinit();
 // FLOAT FUNCTIONS
-int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res);
-int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float* res);
+int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float** res);
+int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float** res);
 int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 // 16-bit functions
 // 16-bit fixed-point functions
-int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits);
+int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t** res, uint8_t fractional_bits);
 

@@ -15,7 +15,7 @@ int main()
     // create two uint16 arrays (twice the size because we use half the memory)
     uint16_t* a1 = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
     uint16_t* a2 = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
-    uint16_t* res = malloc(2 * WIDTH * HEIGHT * sizeof(uint16_t));
+    uint16_t* res;
 
     // intialization of dummy integer values
     for (int i = 0; i < 2 * WIDTH * HEIGHT; ++i)
@@ -32,7 +32,7 @@ int main()
     }
     printf("\n");
 
-    if (gpgpu_arrayAddition_fixed16(a1, a2, res, 5) != 0)
+    if (gpgpu_arrayAddition_fixed16(a1, a2, &res, 5) != 0)
         printf("Could not do the array addition\n");
 
     printf("Contents after addition: \n");
