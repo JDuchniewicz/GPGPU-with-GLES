@@ -14,7 +14,7 @@ int main()
 
     // create two float arrays
     float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* res;
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
 
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
@@ -41,7 +41,7 @@ int main()
     }
     printf("\n");
 
-    if (gpgpu_firConvolution2D(a1, kernel, 3, &res) != 0)
+    if (gpgpu_firConvolution2D(a1, kernel, 3, res) != 0)
         printf("Could not do the FIR filtering\n");
 
     printf("Contents after FIR filtering: \n");

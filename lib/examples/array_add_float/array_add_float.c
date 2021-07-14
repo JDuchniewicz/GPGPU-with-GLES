@@ -15,7 +15,7 @@ int main()
     // create two float arrays
     float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
     float* a2 = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* res;
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
 
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
@@ -31,7 +31,7 @@ int main()
     }
     printf("\n");
 
-    if (gpgpu_arrayAddition(a1, a2, &res) != 0)
+    if (gpgpu_arrayAddition(a1, a2, res) != 0)
         printf("Could not do the array addition\n");
 
     printf("Contents after addition: \n");
