@@ -2,12 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "gpgpu_gles.h"
-
-//#define HEIGHT 4096
-//#define WIDTH HEIGHT
-#define DEBUG 0
-
-// TODO: add time measurements
+#include "computations.h"
 
 void cpu_compute(float* a1, float* a2, float* res);
 void generate_data(float* in1, float* in2);
@@ -39,12 +34,8 @@ int HEIGHT, WIDTH;
 char* NAME;
 EBenchmarkType TYPE;
 
-// first argument is the size of array/matrix used
-// second argument is the type of computation? TODO: add some args parsing?
 int main(int argc, char** argv)
 {
-    clock_t start;
-    int gpu_time, cpu_time;
     srand((unsigned int)time(NULL));
 
     parse_args(argc, argv);
@@ -52,66 +43,22 @@ int main(int argc, char** argv)
     if (gpgpu_init(HEIGHT, WIDTH) != 0)
     {
         printf("Could not initialize the API\n");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
-    // create two float arrays
-    float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* a2 = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
-    float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
+    switch (TYPE) {
+        case ARRAY_ADD_FLOAT:
+            array_add_float();
+            break;
+        case ARRAY_ADD_FIXED16:
+            array_add_fixed16();
+            break;
+        default:
+            fprintf(stderr, "NOT IMPLEMENTED TYPE\n");
+            exit(EXIT_FAILURE);
+    }
 
-    generate_data(a1, a2);
-
-#if DEBUG
-    printf("Data before computation: \n");
-    print_data_f(a1);
-#endif
-
-    start = clock();
-    if (gpgpu_arrayAddition(a1, a2, res) != 0)
-        printf("Could not do the array addition\n");
-
-    gpu_time = clock() - start;
-
-#if DEBUG
-    printf("Contents after GPU addition: \n");
-    print_data_f(res);
-#endif
-
-    start = clock();
-    cpu_compute(a1, a2, res2);
-    cpu_time = clock() - start;
-
-#if DEBUG
-    printf("Contents after CPU addition: \n");
-    print_data_f(res2);
-#endif
-
-    printf("GPU time %f CPU time %f\n", ((float)gpu_time / (float) CLOCKS_PER_SEC), ((float)cpu_time/ (float) CLOCKS_PER_SEC));
-
-    gpgpu_deinit();
-    free(a1);
-    free(a2);
-    free(res);
-    free(res2);
     return 0;
-}
-
-void generate_data(float* in1, float* in2)
-{
-    float maxFloat = 10.0;
-    for (int i = 0; i < WIDTH * HEIGHT; ++i)
-    {
-        float val = ((float)rand() / (float)(RAND_MAX)) * maxFloat;
-        in1[i] = in2[i] = val;
-    }
-}
-
-void cpu_compute(float* a1, float* a2, float* res)
-{
-    for (int i = 0; i < WIDTH * HEIGHT; ++i)
-        res[i] = a1[i] + a2[i];
 }
 
 void parse_args(int argc, char** argv)
@@ -148,17 +95,6 @@ void parse_args(int argc, char** argv)
     }
 }
 
-void print_data_f(float* a)
-{
-    for (int i = 0; i < WIDTH * HEIGHT; ++i)
-    {
-        printf("%.1f ", a[i]);
-        if ((i + 1) % WIDTH == 0)
-            printf("\n");
-    }
-    printf("\n");
-}
-
 int size_valid()
 {
     int ret = 0;
@@ -166,8 +102,8 @@ int size_valid()
         ret = -1;
     if (WIDTH == 0)
         ret = -1;
-    if (WIDTH > 2048) // TODO: query size dynamically?
-        ret = -1;
+//    if (WIDTH > 2048) // TODO: query size dynamically?
+//        ret = -1;
 
     return ret;
 }

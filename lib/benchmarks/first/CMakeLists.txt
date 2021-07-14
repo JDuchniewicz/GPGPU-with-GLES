@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
-project(benchark1 VERSION 1.0)
+project(benchark VERSION 1.0)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/benchmark)
 
 find_package(GPGPU_GLES REQUIRED)
 
-add_executable(benchmark1
-        ${CMAKE_CURRENT_LIST_DIR}/benchmark1.c)
+add_executable(benchmark
+        ${CMAKE_CURRENT_LIST_DIR}/benchmark.c
+        ${CMAKE_CURRENT_LIST_DIR}/computations.c)
 
-target_link_libraries(benchmark1 PRIVATE GPGPU_GLES::GPGPU_GLES)
+target_link_libraries(benchmark PRIVATE GPGPU_GLES::GPGPU_GLES)
