@@ -9,4 +9,6 @@ add_executable(benchmark
         ${CMAKE_CURRENT_LIST_DIR}/benchmark.c
         ${CMAKE_CURRENT_LIST_DIR}/computations.c)
 
+target_compile_options(benchmark PRIVATE -O3)
+
 target_link_libraries(benchmark PRIVATE GPGPU_GLES::GPGPU_GLES)

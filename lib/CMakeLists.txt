@@ -25,6 +25,9 @@ if(CMAKE_HOST_SYSTEM_VERSION MATCHES ".*-ti-.*")
     add_compile_definitions(BEAGLE)
 endif()
 
+# add C flags
+target_compile_options(GPGPU_GLES PRIVATE -O3)
+
 # add alias to use it as GPGPU_GLES::GPGPU_GLES
 add_library(GPGPU_GLES::GPGPU_GLES ALIAS GPGPU_GLES)
 
