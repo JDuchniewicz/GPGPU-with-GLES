@@ -29,11 +29,11 @@ int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
 
     EGLint count;
     static const EGLint config_attrs[] = {
-//#ifndef BEAGLE
+#ifndef BEAGLE
         EGL_BUFFER_SIZE,        32,
-//#else
+#else
         EGL_BUFFER_SIZE,        16,
-//#endif
+#endif
         EGL_DEPTH_SIZE,         EGL_DONT_CARE,
         EGL_STENCIL_SIZE,       EGL_DONT_CARE,
         EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES2_BIT,
