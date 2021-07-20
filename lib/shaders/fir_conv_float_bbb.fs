@@ -77,137 +77,137 @@ void main(void)
 	// x o o
 	// o u o
 	// o o o
+    value = texture2D(texture0, vTexCoord + vec2(float(-1) * w, float(-1) * w));
 	if ((vTexCoord.x + float(-1) * w) > 1.0 ||
 		(vTexCoord.x + float(-1) * w) < 0.0 ||
 		(vTexCoord.y + float(-1) * w) > 1.0 ||
 		(vTexCoord.y + float(-1) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[0] = vec4(0.0);
 	} else
 	{
-		value = texture2D(texture0, vTexCoord + vec2(float(-1) * w, float(-1) * w));
+		samp[0] = value;
 	}
-	samp[0] = value;
 
 	// o x o
 	// o u o
 	// o o o
+    value = texture2D(texture0, vTexCoord + vec2(float( 0) * w, float(-1) * w));
 	if ((vTexCoord.x + float(0) * w) > 1.0 ||
 		(vTexCoord.x + float(0) * w) < 0.0 ||
 		(vTexCoord.y + float(-1) * w) > 1.0 ||
 		(vTexCoord.y + float(-1) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[1] = vec4(0.0);
 	} else
 	{
-    	value = texture2D(texture0, vTexCoord + vec2(float( 0) * w, float(-1) * w));
+    	samp[1] = value;
 	}
-	samp[1] = value;
 
 	// o o x
 	// o u o
 	// o o o
+    value = texture2D(texture0, vTexCoord + vec2(float( 1) * w, float(-1) * w));
 	if ((vTexCoord.x + float(1) * w) > 1.0 ||
 		(vTexCoord.x + float(1) * w) < 0.0 ||
 		(vTexCoord.y + float(-1) * w) > 1.0 ||
 		(vTexCoord.y + float(-1) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[2] = vec4(0.0);
 	} else
 	{
-		value = texture2D(texture0, vTexCoord + vec2(float( 1) * w, float(-1) * w));
+    	samp[2] = value;
 	}
-	samp[2] = value;
 
 	// o o o
 	// x u o
 	// o o o
+    value = texture2D(texture0, vTexCoord + vec2(float(-1) * w, float( 0) * w));
 	if ((vTexCoord.x + float(-1) * w) > 1.0 ||
 		(vTexCoord.x + float(-1) * w) < 0.0 ||
 		(vTexCoord.y + float(0) * w) > 1.0 ||
 		(vTexCoord.y + float(0) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[3] = vec4(0.0);
 	} else
 	{
-        value = texture2D(texture0, vTexCoord + vec2(float(-1) * w, float( 0) * w));
+        samp[3] = value;
     }
-    samp[3] = value;
 
 	// o o o
 	// o x o
 	// o o o
+    value = texture2D(texture0, vTexCoord + vec2(float( 0) * w, float( 0) * w));
 	if ((vTexCoord.x + float(0) * w) > 1.0 ||
 		(vTexCoord.x + float(0) * w) < 0.0 ||
 		(vTexCoord.y + float(0) * w) > 1.0 ||
 		(vTexCoord.y + float(0) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[4] = vec4(0.0);
 	} else
 	{
-        value = texture2D(texture0, vTexCoord + vec2(float( 0) * w, float( 0) * w));
+        samp[4] = value;
     }
-    samp[4] = value;
 
 	// o o o
 	// o u x
 	// o o o
+    value = texture2D(texture0, vTexCoord + vec2(float( 1) * w, float( 0) * w));
 	if ((vTexCoord.x + float(1) * w) > 1.0 ||
 		(vTexCoord.x + float(1) * w) < 0.0 ||
 		(vTexCoord.y + float(0) * w) > 1.0 ||
 		(vTexCoord.y + float(0) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[5] = vec4(0.0);
 	} else
 	{
-        value = texture2D(texture0, vTexCoord + vec2(float( 1) * w, float( 0) * w));
+        samp[5] = value;
     }
-    samp[5] = value;
 
 	// o o o
 	// o u o
 	// x o o
+    value = texture2D(texture0, vTexCoord + vec2(float(-1) * w, float( 1) * w));
 	if ((vTexCoord.x + float(-1) * w) > 1.0 ||
 		(vTexCoord.x + float(-1) * w) < 0.0 ||
 		(vTexCoord.y + float(1) * w) > 1.0 ||
 		(vTexCoord.y + float(1) * w) < 0.0)
 	{
-		value = vec4(0.0);
+        samp[6] = vec4(0.0);
 	} else
 	{
-        value = texture2D(texture0, vTexCoord + vec2(float(-1) * w, float( 1) * w));
+        samp[6] = value;
     }
-    samp[6] = value;
 
 	// o o o
 	// o u o
 	// o x o
+    value = texture2D(texture0, vTexCoord + vec2(float( 0) * w, float( 1) * w));
 	if ((vTexCoord.x + float(0) * w) > 1.0 ||
 		(vTexCoord.x + float(0) * w) < 0.0 ||
 		(vTexCoord.y + float(1) * w) > 1.0 ||
 		(vTexCoord.y + float(1) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[7] = vec4(0.0);
 	} else
 	{
-        value = texture2D(texture0, vTexCoord + vec2(float( 0) * w, float( 1) * w));
+        samp[7] = value;
     }
-    samp[7] = value;
 
 	// o o o
 	// o u o
 	// o o x
+    value = texture2D(texture0, vTexCoord + vec2(float( 1) * w, float( 1) * w));
 	if ((vTexCoord.x + float(1) * w) > 1.0 ||
 		(vTexCoord.x + float(1) * w) < 0.0 ||
 		(vTexCoord.y + float(1) * w) > 1.0 ||
 		(vTexCoord.y + float(1) * w) < 0.0)
 	{
-		value = vec4(0.0);
+		samp[8] = vec4(0.0);
 	} else
 	{
-        value = texture2D(texture0, vTexCoord + vec2(float( 1) * w, float( 1) * w));
+        samp[8] = value;
     }
-    samp[8] = value;
 
     float result = 0.0;
 
@@ -228,5 +228,3 @@ void main(void)
     // do the last transformation to float
     gl_FragColor = pack(result);
 }
-
-
