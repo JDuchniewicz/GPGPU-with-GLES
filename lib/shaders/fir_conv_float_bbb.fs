@@ -215,15 +215,26 @@ void main(void)
 
     // do the convolution (dot product)
     // unrolled for BBB
-    result += unpack(samp[0] * 255.0) * unpack(texture2D(texture1, vec2(step * float(0 + 1), step * float(0 + 1))) * 255.0);
-    result += unpack(samp[1] * 255.0) * unpack(texture2D(texture1, vec2(step * float(1 + 1), step * float(0 + 1))) * 255.0);
-    result += unpack(samp[2] * 255.0) * unpack(texture2D(texture1, vec2(step * float(2 + 1), step * float(0 + 1))) * 255.0);
-    result += unpack(samp[3] * 255.0) * unpack(texture2D(texture1, vec2(step * float(0 + 1), step * float(1 + 1))) * 255.0);
-    result += unpack(samp[4] * 255.0) * unpack(texture2D(texture1, vec2(step * float(1 + 1), step * float(1 + 1))) * 255.0);
-    result += unpack(samp[5] * 255.0) * unpack(texture2D(texture1, vec2(step * float(2 + 1), step * float(1 + 1))) * 255.0);
-    result += unpack(samp[6] * 255.0) * unpack(texture2D(texture1, vec2(step * float(0 + 1), step * float(2 + 1))) * 255.0);
-    result += unpack(samp[7] * 255.0) * unpack(texture2D(texture1, vec2(step * float(1 + 1), step * float(2 + 1))) * 255.0);
-    result += unpack(samp[8] * 255.0) * unpack(texture2D(texture1, vec2(step * float(2 + 1), step * float(2 + 1))) * 255.0);
+
+	vec4 a0 = texture2D(texture1, vec2(step * float(0 + 1), step * float(0 + 1)));
+	vec4 a1 = texture2D(texture1, vec2(step * float(1 + 1), step * float(0 + 1)));
+	vec4 a2 = texture2D(texture1, vec2(step * float(2 + 1), step * float(0 + 1)));
+	vec4 a3 = texture2D(texture1, vec2(step * float(0 + 1), step * float(1 + 1)));
+	vec4 a4 = texture2D(texture1, vec2(step * float(1 + 1), step * float(1 + 1)));
+	vec4 a5 = texture2D(texture1, vec2(step * float(2 + 1), step * float(1 + 1)));
+	vec4 a6 = texture2D(texture1, vec2(step * float(0 + 1), step * float(2 + 1)));
+	vec4 a7 = texture2D(texture1, vec2(step * float(1 + 1), step * float(2 + 1)));
+	vec4 a8 = texture2D(texture1, vec2(step * float(2 + 1), step * float(2 + 1)));
+
+    result += unpack(samp[0] * 255.0) * unpack(a0 * 255.0);
+    result += unpack(samp[1] * 255.0) * unpack(a1 * 255.0);
+    result += unpack(samp[2] * 255.0) * unpack(a2 * 255.0);
+    result += unpack(samp[3] * 255.0) * unpack(a3 * 255.0);
+    result += unpack(samp[4] * 255.0) * unpack(a4 * 255.0);
+    result += unpack(samp[5] * 255.0) * unpack(a5 * 255.0);
+    result += unpack(samp[6] * 255.0) * unpack(a6 * 255.0);
+    result += unpack(samp[7] * 255.0) * unpack(a7 * 255.0);
+    result += unpack(samp[8] * 255.0) * unpack(a8 * 255.0);
 
     // do the last transformation to float
     gl_FragColor = pack(result);
