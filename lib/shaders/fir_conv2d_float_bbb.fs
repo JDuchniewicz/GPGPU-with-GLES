@@ -216,6 +216,7 @@ void main(void)
     // do the convolution (dot product)
     // unrolled for BBB
 
+    // they have to be specified explicitly for SGX (otherwise they are equal to 0.0)
 	vec4 a0 = texture2D(texture1, vec2(step * float(0 + 1), step * float(0 + 1)));
 	vec4 a1 = texture2D(texture1, vec2(step * float(1 + 1), step * float(0 + 1)));
 	vec4 a2 = texture2D(texture1, vec2(step * float(2 + 1), step * float(0 + 1)));

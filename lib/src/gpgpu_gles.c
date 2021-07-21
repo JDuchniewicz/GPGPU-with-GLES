@@ -209,7 +209,11 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     printf("\n");
 #endif
 
-    gpgpu_build_program(REGULAR, FIR_CONV_FLOAT);
+#ifndef BEAGLE
+    gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT);
+#else
+    gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_BBB);
+#endif
 
     // create the geometry to draw the texture on
     GLuint geometry;
