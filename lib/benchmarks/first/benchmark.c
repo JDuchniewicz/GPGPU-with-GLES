@@ -17,6 +17,7 @@ typedef enum
     NONE = -1,
     ARRAY_ADD_FLOAT,
     ARRAY_ADD_FIXED16,
+    CONV2D_FLOAT,
 } EBenchmarkType;
 
 typedef struct
@@ -27,8 +28,9 @@ typedef struct
 
 benchmark_t benchmark_types[] = {
     { .name = "array_add_float", .type = ARRAY_ADD_FLOAT }, { .name = "array_add_fixed16", .type = ARRAY_ADD_FIXED16 },
+    { .name = "conv2d_float",    .type = CONV2D_FLOAT },
 };
-int benchmark_length = 2;
+int benchmark_length = 3;
 
 int HEIGHT, WIDTH;
 char* NAME;
@@ -52,6 +54,9 @@ int main(int argc, char** argv)
             break;
         case ARRAY_ADD_FIXED16:
             array_add_fixed16();
+            break;
+        case CONV2D_FLOAT:
+            conv2d_float();
             break;
         default:
             fprintf(stderr, "NOT IMPLEMENTED TYPE\n");

@@ -102,6 +102,56 @@ void array_add_fixed16()
     free(res2);
 }
 
+void conv2d_float()
+{
+    clock_t start;
+    int gpu_time, cpu_time;
+    // create two float arrays
+    float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
+
+    float kernel[9] = {
+        1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0
+    };
+
+    generate_data_conv2d_f(a1);
+
+#if DEBUG
+    printf("Data before computation: \n");
+    print_data_f(a1);
+#endif
+
+    start = clock();
+    if (gpgpu_firConvolution2D(a1, kernel, 3, res) != 0)
+        printf("Could not do the array addition\n");
+
+    gpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after GPU addition: \n");
+    print_data_f(res);
+#endif
+
+    start = clock();
+    cpu_compute_conv2d_float(a1, kernel, 3, res2);
+    cpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after CPU addition: \n");
+    print_data_f(res2);
+#endif
+
+    printf("GPU time %f CPU time %f\n", ((float)gpu_time / (float) CLOCKS_PER_SEC), ((float)cpu_time/ (float) CLOCKS_PER_SEC));
+
+    gpgpu_deinit();
+    free(a1);
+    free(res);
+    free(res2);
+}
+
 void cpu_compute_array_add_float(float* a1, float* a2, float* res)
 {
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
@@ -153,5 +203,33 @@ void generate_data_f16(uint16_t* in1, uint16_t* in2)
     {
         uint16_t val = (rand() / RAND_MAX) * maxVal;
         in1[i] = in2[i] = val;
+    }
+}
+
+void generate_data_conv2d_f(float* in1)
+{
+    float maxVal = 10.0;
+    for (int i = 0; i < WIDTH * HEIGHT; ++i)
+    {
+        float val = ((float)rand() / (float)(RAND_MAX)) * maxVal;
+        in1[i] = val;
+    }
+}
+
+void cpu_compute_conv2d_float(float* a1, float* kernel, int size, float* res)
+{
+    float tmp = 0.0;
+    float tmp_res = 0.0;
+    for (int i = 0; i < WIDTH; ++i)
+    {
+        for (int j = 0; j < HEIGHT; ++j)
+        {
+            tmp = a1[i * WIDTH + j];
+            for (int k = 0; k < size * size; ++k)
+            {
+                tmp_res += tmp * kernel[k];
+            }
+            res[i * WIDTH + j] = tmp_res;
+        }
     }
 }
