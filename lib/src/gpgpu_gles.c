@@ -4,6 +4,7 @@
 #include "shaders.h"
 
 GLHelper g_helper;
+GChainHelper g_chainHelper;
 
 /////////////////////////
 ////* API FUNCTIONS *////
@@ -12,6 +13,9 @@ GLHelper g_helper;
 int GPGPU_API gpgpu_init(int height, int width)
 {
     int ret = 0;
+    if (g_helper.state != INIT)
+        ERR("Can call init only once!");
+
     int major, minor;
 
     g_helper.height = height;
@@ -109,6 +113,9 @@ int GPGPU_API gpgpu_deinit()
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
 {
     int ret = 0;
+    if (g_helper.state != READY) // TODO: probably no need to set the states in single-shot API
+        ERR("Call gpgpu_init() first!");
+
     unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     GLuint texId0, texId1;
     gpgpu_make_texture(a1, g_helper.width, g_helper.height, &texId0);
@@ -184,7 +191,8 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
 
 bail:
     // TODO: what should be released upon failure?
-    free(buffer);
+    if (buffer)
+        free(buffer);
     return ret;
 }
 
@@ -193,6 +201,9 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
 {
     // if width != height abort? TODO:
     int ret = 0;
+    if (g_helper.state != READY)
+        ERR("Call gpgpu_init() first!");
+
     unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     GLuint texId0, texId1;
     gpgpu_make_texture(data, g_helper.width, g_helper.height, &texId0);
@@ -272,7 +283,8 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     }
 
 bail:
-    free(buffer);
+    if (buffer)
+        free(buffer);
     return ret;
 }
 
@@ -285,6 +297,9 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
 int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits)
 {
     int ret = 0;
+    if (g_helper.state != READY)
+        ERR("Call gpgpu_init() first!");
+
     int fraction_divider = 1 << fractional_bits;
     unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     GLuint texId0, texId1;
@@ -360,6 +375,115 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     }
 
 bail:
-    free(buffer);
+    if (buffer)
+        free(buffer);
     return ret;
+}
+
+///////////////////////////////
+////* CHAIN API FUNCTIONS *////
+///////////////////////////////
+
+int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadFloat* payload, int len, float* a1, float* res)
+{
+    int ret = 0;
+    if (g_helper.state != READY)
+        ERR("Call gpgpu_init() first!");
+
+    // need one more texture for outputting and then reading from it when chaining
+    // so we have: initial texture with init data, regular output texture and one for intermediate outputting
+    // and reading from it in the next step
+
+    gpgpu_make_texture(a1, g_helper.width, g_helper.height, &g_chainHelper.in_texId0);
+    // generate a double-buffer texture for swapping around
+    // allocate a buffer for it so it can be used as an input
+    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
+    gpgpu_make_texture(buffer, g_helper.width, g_helper.height, &g_chainHelper.output_texId1);
+    // specify that we are using output texture ID 0
+    g_chainHelper.outId = 0;
+
+    //gpgpu_make_texture(a2, g_helper.width, g_helper.height, &texId1);
+
+#if DEBUG
+    printf("RAW contents before addition: \n");
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
+    {
+        printf("%d ", *((unsigned char*)a1 + i));
+        if ((i + 1)  % (4 * g_helper.width) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    g_helper.state = COMPUTING;
+
+
+    for (int i = 0; i < len; ++i)
+    {
+        switch(operations[i])
+        {
+            case ADD_SCALAR_FLOAT:
+                if (gpgpu_chain_add_scalar_float(payload[i].s) != 0)
+                    ERR("Error calling gpgpu_chain_add_scalar_float!");
+                break;
+        }
+        // switch the textures to make previous output next input and so on
+        if (i != len -1) // skip for last operation
+            gpgpu_switch_FBO_textures();
+    }
+
+    if (gpgpu_chain_finish_float(res) != 0)
+        ERR("Could not return the computed data!");
+bail:
+    if (buffer)
+        free(buffer);
+    g_helper.state = READY;
+    return ret;
+}
+
+int GPGPU_API gpgpu_chain_finish_float(float* res)
+{
+    int ret = 0;
+    if (g_helper.state == COMPUTING)
+        ERR("This can only be called via the chain_apply functions!");
+
+    // read from the output texture 0
+bail:
+    return ret;
+
+}
+
+int GPGPU_API gpgpu_chain_add_scalar_float(float s)
+{
+    int ret = 0;
+    if (g_helper.state == COMPUTING)
+        ERR("This can only be called via the chain_apply functions!");
+
+    gpgpu_build_program(REGULAR, CHAIN_ADD_SCALAR_FLOAT);
+
+    GLuint geometry;
+    glGenBuffers(1, &geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
+
+    gpgpu_add_uniform("scalar", 0, "uniform1f");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // now the out_texture contains the result
+bail:
+    return ret;
+
 }

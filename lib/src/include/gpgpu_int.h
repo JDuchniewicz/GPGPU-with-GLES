@@ -7,6 +7,7 @@
 int gpgpu_check_egl_extensions();
 int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format);
 int gpgpu_make_FBO();
+int gpgpu_switch_FBO_textures();
 void gpgpu_make_texture(void* buffer, int w, int h, GLuint* texId);
 int gpgpu_build_program(EVertexShader vertType, EFragmentShader fragType);
 void gpgpu_add_attribute(const char* name, int size, int stride, int offset);

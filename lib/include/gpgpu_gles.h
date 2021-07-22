@@ -20,3 +20,11 @@ int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
 // 16-bit fixed-point functions
 int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits);
 
+// chaining API
+// specify the input data as a void** pointer(array of arrays) which will be decomposed, operations to perform
+// needs chaining via an output texture instead of a framebuffer
+int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadFloat* payload, int len, float* a1, float* res);
+int GPGPU_API gpgpu_chain_finish_float(float* res);
+
+// broadcast operations
+int GPGPU_API gpgpu_chain_add_scalar_float(float s);

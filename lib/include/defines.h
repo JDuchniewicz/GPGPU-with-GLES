@@ -23,8 +23,31 @@
     goto bail; \
 }
 
+typedef enum
+{
+    // float
+    // scalar
+    ADD_SCALAR_FLOAT,
+    // a x a
+
+} EOperation;
+
+typedef union
+{
+    float s;
+    float* arr;
+} UOperationPayloadFloat;
+
+typedef enum
+{
+    INIT = 0,
+    READY,
+    COMPUTING,
+} EProgramState;
+
 typedef struct
 {
+    EProgramState state;
 	GLint ESShaderProgram;
 	EGLDisplay display;
 	EGLConfig config;
@@ -36,3 +59,11 @@ typedef struct
     int height;
     int width;
 } GLHelper;
+
+typedef struct
+{
+    GLuint in_texId0, in_texId1;
+    GLuint output_texId0, output_texId1;
+    GLuint fbId;
+    int outId;
+} GChainHelper;

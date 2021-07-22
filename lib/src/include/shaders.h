@@ -9,6 +9,8 @@ typedef enum
     FIR_CONV2D_FLOAT,
     FIR_CONV2D_FLOAT_BBB, // special unrolled version for SGX
     MAT_MULT_FLOAT,
+    // chain operations
+    CHAIN_ADD_SCALAR_FLOAT,
     NONE = -1,
 } EFragmentShader;
 

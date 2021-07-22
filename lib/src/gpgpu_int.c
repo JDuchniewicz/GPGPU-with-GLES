@@ -2,6 +2,7 @@
 #include "debug.h"
 
 extern GLHelper g_helper;
+extern GChainHelper g_chainHelper;
 /////////////////////////////
 ////* PRIVATE FUNCTIONS *////
 /////////////////////////////
@@ -99,6 +100,33 @@ int gpgpu_make_FBO()
     else
         ret = 0;
 
+    // save the FBO texture as the primary output for chaining
+    g_chainHelper.output_texId0 = texId;
+    g_chainHelper.outId = 0;
+    g_chainHelper.fbId = fbId;
+    return ret;
+}
+
+int gpgpu_switch_FBO_textures()
+{
+    int ret = 0;
+
+    if (g_chainHelper.outId == 0)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_chainHelper.output_texId1, 0);
+
+        g_chainHelper.outId = 1;
+    } else if (g_chainHelper.outId == 1)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_chainHelper.output_texId0, 0);
+
+        g_chainHelper.outId = 0;
+    } else
+        ERR("Wrong output texture ID specified.");
+
+bail:
     return ret;
 }
 
