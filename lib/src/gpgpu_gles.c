@@ -89,6 +89,7 @@ int GPGPU_API gpgpu_init(int height, int width)
     if (gpgpu_make_FBO() != 0)
         ERR("Could not create FBO");
 
+    g_helper.state = READY;
     return ret;
 bail:
     // release all resources
@@ -423,7 +424,7 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
                 break;
         }
         // switch the textures to make previous output next input and so on
-        if (i != len -1) // skip for last operation
+        if (i == len -1) // skip for last operation
             gpgpu_swap_FBO_textures();
     }
 
@@ -438,7 +439,7 @@ int GPGPU_API gpgpu_chain_finish_float(float* res)
 {
     int ret = 0;
     unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
-    if (g_helper.state == COMPUTING)
+    if (g_helper.state != COMPUTING)
         ERR("This can only be called via the chain_apply functions!");
 
     // it will read from the currently bound output texture
@@ -468,7 +469,7 @@ bail:
 int GPGPU_API gpgpu_chain_add_scalar_float(float s)
 {
     int ret = 0;
-    if (g_helper.state == COMPUTING)
+    if (g_helper.state != COMPUTING)
         ERR("This can only be called via the chain_apply functions!");
 
     gpgpu_build_program(REGULAR, CHAIN_ADD_SCALAR_FLOAT);

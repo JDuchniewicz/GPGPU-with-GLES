@@ -41,6 +41,8 @@ static const struct FFileName fFileNames[] = {
     { .type = FIR_CONV2D_FLOAT,             .filename = "../shaders/fir_conv2d_float.fs" },
     { .type = FIR_CONV2D_FLOAT_BBB,         .filename = "../shaders/fir_conv2d_float_bbb.fs" },
     { .type = MAT_MULT_FLOAT,               .filename = "mat_mult_float.fs" },
+    // chain operations
+    { .type = CHAIN_ADD_SCALAR_FLOAT,       .filename = "../shaders/chain_add_scalar_float.fs" },
 };
 
 int gpgpu_load_shaders(EVertexShader vertType, EFragmentShader fragType, GLchar** vSource, GLchar** fSource);
