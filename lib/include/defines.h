@@ -65,5 +65,4 @@ typedef struct
     GLuint in_texId0, in_texId1;
     GLuint output_texId0, output_texId1;
     GLuint fbId;
-    int outId;
 } GChainHelper;

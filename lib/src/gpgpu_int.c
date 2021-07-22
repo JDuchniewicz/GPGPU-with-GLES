@@ -102,36 +102,18 @@ int gpgpu_make_FBO()
 
     // save the FBO texture as the primary output for chaining
     g_chainHelper.output_texId0 = texId;
-    g_chainHelper.outId = 0;
     g_chainHelper.fbId = fbId;
     return ret;
 }
 
-int gpgpu_swap_FBO_textures()
+void gpgpu_copy_FBO_output()
 {
-    int ret = 0;
+    glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.output_texId1);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_helper.width, g_helper.height);
 
-    if (g_chainHelper.outId == 0)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_chainHelper.output_texId1, 0);
-
-        // the IN texture is now old OUT
-        g_chainHelper.in_texId0 = g_chainHelper.output_texId0;
-        g_chainHelper.outId = 1;
-    } else if (g_chainHelper.outId == 1)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_chainHelper.output_texId0, 0);
-
-        // the IN texture is now old OUT
-        g_chainHelper.in_texId0 = g_chainHelper.output_texId1;
-        g_chainHelper.outId = 0;
-    } else
-        ERR("Wrong output texture ID specified.");
-
-bail:
-    return ret;
+    // the IN texture is now old OUT
+    g_chainHelper.in_texId0 = g_chainHelper.output_texId1;
 }
 
 void gpgpu_make_texture(void* buffer, int w, int h, GLuint* texId) //TODO: int to float casting?

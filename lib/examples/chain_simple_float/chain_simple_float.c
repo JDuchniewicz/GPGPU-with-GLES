@@ -34,7 +34,7 @@ int main()
     UOperationPayloadFloat* payload = malloc(2 * sizeof(UOperationPayloadFloat));
     payload[0].s = 2.0;
     payload[1].s = 2.0;
-    if (gpgpu_chain_apply_float(ops, payload, 1, a1, res) != 0)
+    if (gpgpu_chain_apply_float(ops, payload, 2, a1, res) != 0)
         printf("Could not do the chain computation\n");
 
     printf("Contents after addition: \n");

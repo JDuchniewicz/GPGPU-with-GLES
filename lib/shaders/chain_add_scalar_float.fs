@@ -66,5 +66,5 @@ void main(void)
 {
     vec4 texel1 = texture2D(texture0, vTexCoord);
     float a1 = unpack(texel1 * 255.0);
-    gl_FragColor = pack(a1 * scalar);
+    gl_FragColor = pack(a1 + scalar);
 }

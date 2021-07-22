@@ -396,10 +396,9 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
     // and reading from it in the next step
 
     gpgpu_make_texture(a1, g_helper.width, g_helper.height, &g_chainHelper.in_texId0);
-    // generate a double-buffer texture for swapping around TODO: check if the texture will be preserved
+    // generate a double-buffer texture, which will hold the contents of FB for swapping around
+    // texId0 is the regular FBO, texId1 contains the copy of last FBO
     gpgpu_make_texture(NULL, g_helper.width, g_helper.height, &g_chainHelper.output_texId1);
-    // specify that we are using output texture ID 0
-    g_chainHelper.outId = 0;
 
 #if DEBUG
     printf("RAW contents before addition: \n");
@@ -424,8 +423,11 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
                 break;
         }
         // switch the textures to make previous output next input and so on
-        if (i == len -1) // skip for last operation
-            gpgpu_swap_FBO_textures();
+        if (i != len -1) // skip for last operation
+        {
+            printf("swapped\n"); // TODO: debug message
+            gpgpu_copy_FBO_output();
+        }
     }
 
     if (gpgpu_chain_finish_float(res) != 0)
