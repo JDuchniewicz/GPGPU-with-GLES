@@ -183,7 +183,7 @@ int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res)
     printf("\n");
 #endif
 
-    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
+    // copy the bytes as floats
     for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
     {
         res[i / 4] = *((float*)buffer + i / 4);
@@ -276,7 +276,7 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
     printf("\n");
 #endif
 
-    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
+    // copy the bytes as floats
     for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
     {
         res[i / 4] = *((float*)buffer + i / 4);
@@ -368,7 +368,7 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
     printf("\n");
 #endif
 
-    // copy the bytes as floats TODO: remove this copy and instead reinterpret the bytes
+    // copy the bytes as floats
     for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 2)
     {
         res[i / 2] = *((uint16_t*)buffer + i / 2);
@@ -395,14 +395,10 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
     // and reading from it in the next step
 
     gpgpu_make_texture(a1, g_helper.width, g_helper.height, &g_chainHelper.in_texId0);
-    // generate a double-buffer texture for swapping around
-    // allocate a buffer for it so it can be used as an input
-    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
-    gpgpu_make_texture(buffer, g_helper.width, g_helper.height, &g_chainHelper.output_texId1);
+    // generate a double-buffer texture for swapping around TODO: check if the texture will be preserved
+    gpgpu_make_texture(NULL, g_helper.width, g_helper.height, &g_chainHelper.output_texId1);
     // specify that we are using output texture ID 0
     g_chainHelper.outId = 0;
-
-    //gpgpu_make_texture(a2, g_helper.width, g_helper.height, &texId1);
 
 #if DEBUG
     printf("RAW contents before addition: \n");
@@ -417,7 +413,6 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
 
     g_helper.state = COMPUTING;
 
-
     for (int i = 0; i < len; ++i)
     {
         switch(operations[i])
@@ -429,14 +424,12 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
         }
         // switch the textures to make previous output next input and so on
         if (i != len -1) // skip for last operation
-            gpgpu_switch_FBO_textures();
+            gpgpu_swap_FBO_textures();
     }
 
     if (gpgpu_chain_finish_float(res) != 0)
         ERR("Could not return the computed data!");
 bail:
-    if (buffer)
-        free(buffer);
     g_helper.state = READY;
     return ret;
 }
@@ -444,13 +437,32 @@ bail:
 int GPGPU_API gpgpu_chain_finish_float(float* res)
 {
     int ret = 0;
+    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
     if (g_helper.state == COMPUTING)
         ERR("This can only be called via the chain_apply functions!");
 
-    // read from the output texture 0
-bail:
-    return ret;
+    // it will read from the currently bound output texture
+    glReadPixels(0, 0, g_helper.width, g_helper.height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
+#if DEBUG
+    printf("RAW contents after addition: \n");
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
+    {
+        printf("%d ", buffer[i]);
+        if ((i + 1)  % (4 * g_helper.width) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // copy the bytes as floats
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
+    {
+        res[i / 4] = *((float*)buffer + i / 4);
+    }
+bail:
+    free(buffer);
+    return ret;
 }
 
 int GPGPU_API gpgpu_chain_add_scalar_float(float s)
@@ -470,10 +482,10 @@ int GPGPU_API gpgpu_chain_add_scalar_float(float s)
     gpgpu_add_attribute("texCoord", 2, 20, 3);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, g_chainHelper.texId0);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.in_texId0);
     gpgpu_add_uniform("texture0", 0, "uniform1i");
 
-    gpgpu_add_uniform("scalar", 0, "uniform1f");
+    gpgpu_add_uniform("scalar", s, "uniform1f");
 
     glActiveTexture(GL_TEXTURE0);
 
@@ -482,8 +494,7 @@ int GPGPU_API gpgpu_chain_add_scalar_float(float s)
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    // now the out_texture contains the result
+    // now the currently bound out_texture contains the result
 bail:
     return ret;
-
 }

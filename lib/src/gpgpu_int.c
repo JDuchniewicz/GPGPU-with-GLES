@@ -107,7 +107,7 @@ int gpgpu_make_FBO()
     return ret;
 }
 
-int gpgpu_switch_FBO_textures()
+int gpgpu_swap_FBO_textures()
 {
     int ret = 0;
 
@@ -116,12 +116,16 @@ int gpgpu_switch_FBO_textures()
         glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_chainHelper.output_texId1, 0);
 
+        // the IN texture is now old OUT
+        g_chainHelper.in_texId0 = g_chainHelper.output_texId0;
         g_chainHelper.outId = 1;
     } else if (g_chainHelper.outId == 1)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, g_chainHelper.fbId);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_chainHelper.output_texId0, 0);
 
+        // the IN texture is now old OUT
+        g_chainHelper.in_texId0 = g_chainHelper.output_texId1;
         g_chainHelper.outId = 0;
     } else
         ERR("Wrong output texture ID specified.");
