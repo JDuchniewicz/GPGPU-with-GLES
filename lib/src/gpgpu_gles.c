@@ -391,10 +391,6 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
     if (g_helper.state != READY)
         ERR("Call gpgpu_init() first!");
 
-    // need one more texture for outputting and then reading from it when chaining
-    // so we have: initial texture with init data, regular output texture and one for intermediate outputting
-    // and reading from it in the next step
-
     gpgpu_make_texture(a1, g_helper.width, g_helper.height, &g_chainHelper.in_texId0);
     // generate a double-buffer texture, which will hold the contents of FB for swapping around
     // texId0 is the regular FBO, texId1 contains the copy of last FBO
