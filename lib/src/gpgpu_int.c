@@ -112,7 +112,7 @@ void gpgpu_copy_FBO_output()
     glBindTexture(GL_TEXTURE_2D, g_chainHelper.output_texId1);
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_helper.width, g_helper.height);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // the IN texture is now the old framebuffer
     g_chainHelper.in_texId0 = g_chainHelper.output_texId1;
