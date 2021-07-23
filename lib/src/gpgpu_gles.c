@@ -227,9 +227,33 @@ int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float
 #endif
 
 #ifndef BEAGLE
-    gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT);
+    switch (size)
+    {
+        case 3:
+            gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_3);
+            break;
+        case 5:
+            if (g_helper.width < 5 || g_helper.height < 5)
+                ERR("WIDTH && HEIGHT must be greater than 5");
+            gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_5);
+            break;
+        default:
+            ERR("Supported kernel size: 3, 5");
+    }
 #else
-    gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_BBB);
+    switch (size)
+    {
+        case 3:
+            gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_BBB_3);
+            break;
+        case 5:
+            if (g_helper.width < 5 || g_helper.height < 5)
+                ERR("WIDTH && HEIGHT must be greater than 5");
+            gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_BBB_5);
+            break;
+        default:
+            ERR("Supported kernel size: 3, 5");
+    }
 #endif
 
     // create the geometry to draw the texture on

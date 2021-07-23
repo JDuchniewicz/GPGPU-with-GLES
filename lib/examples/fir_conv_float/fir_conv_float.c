@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "gpgpu_gles.h"
 
-#define HEIGHT 4
+#define HEIGHT 8
 #define WIDTH HEIGHT
 
 int main()
@@ -21,16 +21,24 @@ int main()
         a1[i] = i;
     }
 
-    float kernel[9] = {
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0
-    };
+    //float kernel[9] = {
+    //    1.0, 1.0, 1.0,
+    //    1.0, 1.0, 1.0,
+    //    1.0, 1.0, 1.0
+    //};
     //float kernel[9] = {
     //    0.0, 0.0, 0.0,
     //    0.0, 1.0, 0.0,
     //    0.0, 0.0, 0.0
     //};
+
+    float kernel[25] = {
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+    };
 
     printf("Data before computation: \n");
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
@@ -41,7 +49,7 @@ int main()
     }
     printf("\n");
 
-    if (gpgpu_firConvolution2D(a1, kernel, 3, res) != 0)
+    if (gpgpu_firConvolution2D(a1, kernel, 5, res) != 0)
         printf("Could not do the FIR filtering\n");
 
     printf("Contents after FIR filtering: \n");
