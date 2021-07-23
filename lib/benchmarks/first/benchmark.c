@@ -17,7 +17,9 @@ typedef enum
     NONE = -1,
     ARRAY_ADD_FLOAT,
     ARRAY_ADD_FIXED16,
-    CONV2D_FLOAT,
+    CONV2D_FLOAT_3, // could change it to getopt_long but for now leave it as is
+    CONV2D_FLOAT_5,
+    // TODO: benchmark chaining API
 } EBenchmarkType;
 
 typedef struct
@@ -28,9 +30,9 @@ typedef struct
 
 benchmark_t benchmark_types[] = {
     { .name = "array_add_float", .type = ARRAY_ADD_FLOAT }, { .name = "array_add_fixed16", .type = ARRAY_ADD_FIXED16 },
-    { .name = "conv2d_float",    .type = CONV2D_FLOAT },
+    { .name = "conv2d_float_3",  .type = CONV2D_FLOAT_3 },  { .name = "conv2d_float_5",    .type = CONV2D_FLOAT_5 },
 };
-int benchmark_length = 3;
+int benchmark_length = 4;
 
 int HEIGHT, WIDTH;
 char* NAME;
@@ -55,8 +57,11 @@ int main(int argc, char** argv)
         case ARRAY_ADD_FIXED16:
             array_add_fixed16();
             break;
-        case CONV2D_FLOAT:
-            conv2d_float();
+        case CONV2D_FLOAT_3:
+            conv2d_float(3);
+            break;
+        case CONV2D_FLOAT_5:
+            conv2d_float(5);
             break;
         default:
             fprintf(stderr, "NOT IMPLEMENTED TYPE\n");
@@ -135,7 +140,7 @@ void print_benchmark_names()
     for (int i = 0; i < benchmark_length; ++i)
     {
         fprintf(stderr, "%s\t", benchmark_types[i].name);
-        if (i % 2 == 0)
+        if (i % 2 != 0)
             fprintf(stderr, "\n");
     }
     fprintf(stderr, "\n");

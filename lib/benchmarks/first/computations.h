@@ -3,7 +3,7 @@
 
 void array_add_float();
 void array_add_fixed16();
-void conv2d_float();
+void conv2d_float(int size);
 
 void cpu_compute_array_add_float(float* a1, float* a2, float* res);
 void generate_data_f(float* in1, float* in2);

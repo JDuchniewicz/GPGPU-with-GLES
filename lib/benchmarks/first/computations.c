@@ -102,7 +102,7 @@ void array_add_fixed16()
     free(res2);
 }
 
-void conv2d_float()
+void conv2d_float(int size)
 {
     clock_t start;
     int gpu_time, cpu_time;
