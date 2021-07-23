@@ -69,7 +69,7 @@ int GPGPU_API gpgpu_init(int height, int width)
         EGL_HEIGHT, height,
         EGL_NONE
     };
-    g_helper.surface = eglCreatePufferSurface(g_helper.display, g_helper.config, eglSurfaceAttibutes);
+    g_helper.surface = eglCreatePbufferSurface(g_helper.display, g_helper.config, eglSurfaceAttibutes);
 #endif
 
     if (g_helper.surface == EGL_NO_SURFACE)
