@@ -29,18 +29,28 @@ int gpgpu_find_matching_config(EGLConfig* config, uint32_t gbm_format)
         ERR("No display created!");
 
     EGLint count;
-    static const EGLint config_attrs[] = {
 #ifndef BEAGLE
+    static const EGLint config_attrs[] = {
         EGL_BUFFER_SIZE,        32,
-#else
         EGL_BUFFER_SIZE,        16,
-#endif
         EGL_DEPTH_SIZE,         EGL_DONT_CARE,
         EGL_STENCIL_SIZE,       EGL_DONT_CARE,
         EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES2_BIT,
         EGL_SURFACE_TYPE,       EGL_WINDOW_BIT,
         EGL_NONE
     };
+#else
+    static const EGLint config_attrs[] = {
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_ALPHA_SIZE, 8,
+        EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+        EGL_NONE
+    };
+#endif
+
     if (!eglGetConfigs(g_helper.display, NULL, 0, &count))
         ERR("Could not get number of configs");
 
@@ -112,6 +122,7 @@ void gpgpu_copy_FBO_output()
     glBindTexture(GL_TEXTURE_2D, g_chainHelper.output_texId1);
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_helper.width, g_helper.height);
 
+    // causes errors on SGX
     //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // the IN texture is now the old framebuffer

@@ -12,19 +12,28 @@ static const float gpgpu_geometry[20] = {
 
 int GPGPU_API gpgpu_init(int width, int height);
 int GPGPU_API gpgpu_deinit();
+
 // FLOAT FUNCTIONS
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res);
 int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float* res);
 int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
+
 // 16-bit functions
 // 16-bit fixed-point functions
 int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* res, uint8_t fractional_bits);
 
 // chaining API
-// specify the input data as a void** pointer(array of arrays) which will be decomposed, operations to perform
 // needs chaining via an output texture instead of a framebuffer
 int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadFloat* payload, int len, float* a1, float* res);
 int GPGPU_API gpgpu_chain_finish_float(float* res);
 
-// broadcast operations
+// broadcast operations TODO: flesh out and extract common parts? enum of ops
 int GPGPU_API gpgpu_chain_add_scalar_float(float s);
+int GPGPU_API gpgpu_chain_sub_scalar_float(float s);
+int GPGPU_API gpgpu_chain_mul_scalar_float(float s);
+int GPGPU_API gpgpu_chain_div_scalar_float(float s);
+
+int GPGPU_API gpgpu_chain_add_array_float(float s);
+int GPGPU_API gpgpu_chain_sub_array_float(float s);
+int GPGPU_API gpgpu_chain_mul_array_float(float s);
+int GPGPU_API gpgpu_chain_div_array_float(float s);

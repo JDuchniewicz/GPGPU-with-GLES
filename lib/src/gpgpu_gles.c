@@ -64,7 +64,12 @@ int GPGPU_API gpgpu_init(int height, int width)
         ERR("Could not create GBM surface");
     g_helper.surface = eglCreateWindowSurface(g_helper.display, g_helper.config, g_helper.gbm_surface, NULL);
 #else
-    g_helper.surface = eglCreateWindowSurface(g_helper.display, g_helper.config, (EGLNativeWindowType)0, NULL); //g_helper.gbm_surface, NULL);
+    EGLint eglSurfaceAttibutes = {
+        EGL_WIDTH, width,
+        EGL_HEIGHT, height,
+        EGL_NONE
+    };
+    g_helper.surface = eglCreatePufferSurface(g_helper.display, g_helper.config, eglSurfaceAttibutes);
 #endif
 
     if (g_helper.surface == EGL_NO_SURFACE)
