@@ -446,9 +446,15 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
                 if (gpgpu_chain_add_scalar_float(payload[i].s) != 0)
                     ERR("Error calling gpgpu_chain_add_scalar_float!");
                 break;
+            case FIR_CONV2D_FLOAT:
+                // consume two operation slots
+                if (gpgpu_chain_conv2d_float(payload[i].arr, payload[i + 1].n) != 0)
+                    ERR("Error calling gpgpu_chain_add_scalar_float!");
+                ++i;
+                break;
         }
         // switch the textures to make previous output next input and so on
-        if (i != len -1) // skip for last operation
+        if (i != len -1) // skip for last operation (TODO: will it work with double width operations? probably no!)
         {
             printf("swapped\n"); // TODO: debug message
             gpgpu_copy_FBO_output();
@@ -514,6 +520,76 @@ int GPGPU_API gpgpu_chain_add_scalar_float(float s)
     gpgpu_add_uniform("texture0", 0, "uniform1i");
 
     gpgpu_add_uniform("scalar", s, "uniform1f");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // now the currently bound out_texture contains the result
+bail:
+    return ret;
+}
+
+/* ADD OPS and maybe move to a different source file */
+
+int GPGPU_API gpgpu_chain_conv2d_float(float* kernel, int size)
+{
+    int ret = 0;
+    if (g_helper.state != COMPUTING)
+        ERR("This can only be called via the chain_apply functions!");
+
+    gpgpu_make_texture(kernel, size, size, &g_chainHelper.in_texId1);
+#ifndef BEAGLE
+        switch (size)
+        {
+            case 3:
+                gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_3);
+                break;
+            case 5:
+                if (g_helper.width < 5 || g_helper.height < 5)
+                    ERR("WIDTH && HEIGHT must be greater than 5");
+                gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_5);
+                break;
+            default:
+                ERR("Supported kernel size: 3, 5");
+        }
+#else
+        switch (size)
+        {
+            case 3:
+                gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_BBB_3);
+                break;
+            case 5:
+                if (g_helper.width < 5 || g_helper.height < 5)
+                    ERR("WIDTH && HEIGHT must be greater than 5");
+                gpgpu_build_program(REGULAR, FIR_CONV2D_FLOAT_BBB_5);
+                break;
+            default:
+                ERR("Supported kernel size: 3, 5");
+        }
+#endif
+
+    GLuint geometry;
+    glGenBuffers(1, &geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.in_texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.in_texId1);
+    gpgpu_add_uniform("texture1", 1, "uniform1i");
+
+    // add the texture step =  1 / width
+    gpgpu_add_uniform("w", 1.0 / g_helper.width, "uniform1f");
 
     glActiveTexture(GL_TEXTURE0);
 

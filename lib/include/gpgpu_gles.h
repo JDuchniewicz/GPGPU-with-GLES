@@ -37,3 +37,5 @@ int GPGPU_API gpgpu_chain_add_array_float(float s);
 int GPGPU_API gpgpu_chain_sub_array_float(float s);
 int GPGPU_API gpgpu_chain_mul_array_float(float s);
 int GPGPU_API gpgpu_chain_div_array_float(float s);
+
+int GPGPU_API gpgpu_chain_conv2d_float(float* kernel, int size);

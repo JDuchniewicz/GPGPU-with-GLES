@@ -38,15 +38,15 @@ static const struct VFileName vFileNames[] = {
 };
 
 static const struct FFileName fFileNames[] = {
-    { .type = ARRAY_ADD_FLOAT,              .filename = "../shaders/array_add_float.fs" },
-    { .type = ARRAY_ADD_FIXED16,            .filename = "../shaders/array_add_fixed16.fs" },
+    { .type = ARRAY_ADD_FLOAT,                .filename = "../shaders/array_add_float.fs" },
+    { .type = ARRAY_ADD_FIXED16,              .filename = "../shaders/array_add_fixed16.fs" },
     { .type = FIR_CONV2D_FLOAT_3,             .filename = "../shaders/fir_conv2d_float_3.fs" },
     { .type = FIR_CONV2D_FLOAT_5,             .filename = "../shaders/fir_conv2d_float_5.fs" },
     { .type = FIR_CONV2D_FLOAT_BBB_3,         .filename = "../shaders/fir_conv2d_float_bbb_3.fs" },
     { .type = FIR_CONV2D_FLOAT_BBB_5,         .filename = "../shaders/fir_conv2d_float_bbb_5.fs" },
-    { .type = MAT_MULT_FLOAT,               .filename = "mat_mult_float.fs" },
+    { .type = MAT_MULT_FLOAT,                 .filename = "mat_mult_float.fs" },
     // chain operations
-    { .type = CHAIN_ADD_SCALAR_FLOAT,       .filename = "../shaders/chain_add_scalar_float.fs" },
+    { .type = CHAIN_ADD_SCALAR_FLOAT,         .filename = "../shaders/chain_add_scalar_float.fs" },
 };
 
 int gpgpu_load_shaders(EVertexShader vertType, EFragmentShader fragType, GLchar** vSource, GLchar** fSource);

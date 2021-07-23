@@ -29,13 +29,15 @@ typedef enum
     // scalar
     ADD_SCALAR_FLOAT,
     // a x a
-
+    //
+    FIR_CONV2D_FLOAT,
 } EOperation;
 
 typedef union
 {
     float s;
     float* arr;
+    int n; // kernel size
 } UOperationPayloadFloat;
 
 typedef enum

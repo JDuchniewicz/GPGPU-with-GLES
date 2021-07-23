@@ -19,7 +19,7 @@ typedef enum
     ARRAY_ADD_FIXED16,
     CONV2D_FLOAT_3, // could change it to getopt_long but for now leave it as is
     CONV2D_FLOAT_5,
-    // TODO: benchmark chaining API
+    // TODO: benchmark chaining API (how to specify which benchmarks to run?) special argument to choose their order?
 } EBenchmarkType;
 
 typedef struct
