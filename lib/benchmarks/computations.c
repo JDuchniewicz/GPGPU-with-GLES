@@ -111,11 +111,29 @@ void conv2d_float(int size)
     float* res = malloc(WIDTH * HEIGHT * sizeof(float));
     float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
 
-    float kernel[9] = {
+    float* kernel;
+    float kernel_3[9] = {
         1.0, 1.0, 1.0,
         1.0, 1.0, 1.0,
         1.0, 1.0, 1.0
     };
+    float kernel_5[25] = {
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+    };
+
+    switch (size)
+    {
+        case 3:
+            kernel = kernel_3;
+            break;
+        case 5:
+            kernel = kernel_5;
+            break;
+    }
 
     generate_data_conv2d_f(a1);
 
@@ -125,7 +143,7 @@ void conv2d_float(int size)
 #endif
 
     start = clock();
-    if (gpgpu_firConvolution2D(a1, kernel, 3, res) != 0)
+    if (gpgpu_firConvolution2D(a1, kernel, size, res) != 0)
         printf("Could not do the array addition\n");
 
     gpu_time = clock() - start;
@@ -136,7 +154,7 @@ void conv2d_float(int size)
 #endif
 
     start = clock();
-    cpu_compute_conv2d_float(a1, kernel, 3, res2);
+    cpu_compute_conv2d_float(a1, kernel, size, res2);
     cpu_time = clock() - start;
 
 #if DEBUG
@@ -179,7 +197,7 @@ void chain_add_float(int rep)
         payload[i].s = 2.0;
     }
     if (gpgpu_chain_apply_float(ops, payload, rep, a1, res) != 0)
-        printf("Could not do the array addition\n");
+        printf("Could not do the chain scalar addition\n");
 
     gpu_time = clock() - start;
 
@@ -209,7 +227,83 @@ void chain_add_float(int rep)
 
 void chain_conv2d_float(int rep, int size)
 {
+    clock_t start;
+    int gpu_time, cpu_time;
+    // create two float arrays
+    float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
 
+    float* kernel;
+    float kernel_3[9] = {
+        1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0
+    };
+    float kernel_5[25] = {
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0, 1.0,
+    };
+
+    switch (size)
+    {
+        case 3:
+            kernel = kernel_3;
+            break;
+        case 5:
+            kernel = kernel_5;
+            break;
+    }
+
+    generate_data_conv2d_f(a1);
+
+#if DEBUG
+    printf("Data before computation: \n");
+    print_data_f(a1);
+#endif
+    EOperation* ops = malloc(2 * rep * sizeof(EOperation));
+    UOperationPayloadFloat* payload = malloc(2 * rep * sizeof(UOperationPayloadFloat));
+
+    start = clock();
+    for (int i = 0; i < rep; i += 2)
+    {
+        ops[i] = FIR_CONV2D_FLOAT;
+        payload[i].arr = kernel;
+        ops[i + 1] = FIR_CONV2D_FLOAT;
+        payload[i + 1].n = size;
+    }
+
+    start = clock();
+    if (gpgpu_chain_apply_float(ops, payload, rep, a1, res) != 0)
+        printf("Could not do the chain conv2d\n");
+
+    gpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after GPU addition: \n");
+    print_data_f(res);
+#endif
+
+    start = clock();
+    cpu_compute_chain_conv2d_float(rep, a1, kernel, size, res2);
+    cpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after CPU addition: \n");
+    print_data_f(res2);
+#endif
+
+    printf("GPU time %f CPU time %f\n", ((float)gpu_time / (float) CLOCKS_PER_SEC), ((float)cpu_time/ (float) CLOCKS_PER_SEC));
+
+    gpgpu_deinit();
+    free(a1);
+    free(res);
+    free(res2);
+    free(ops);
+    free(payload);
 }
 
 void cpu_compute_array_add_float(float* a1, float* a2, float* res)
@@ -294,12 +388,22 @@ void cpu_compute_conv2d_float(float* a1, float* kernel, int size, float* res)
     }
 }
 
-void cpu_compute_chain_add_float(int rep, float scalar, float* a1, float* res2)
+void cpu_compute_chain_add_float(int rep, float scalar, float* a1, float* res)
 {
     for (int n = 0; n < rep; ++n)
     {
         for (int i = 0; i < WIDTH * HEIGHT; ++i)
-            res2[i] = a1[i] = a1[i] + scalar;
+            res[i] = a1[i] = a1[i] + scalar;
+    }
+}
+
+void cpu_compute_chain_conv2d_float(int rep, float* a1, float* kernel, int size, float* res)
+{
+    for (int n = 0; n < rep; ++n)
+    {
+        cpu_compute_conv2d_float(a1, kernel, size, res);
+        for (int i = 0; i < WIDTH * HEIGHT; ++i)
+            a1[i] = res[i]; // copy old output as new input
     }
 }
 
