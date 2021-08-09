@@ -11,6 +11,7 @@ void print_data_f(float* a);
 void print_benchmark_names();
 int size_valid();
 int name_valid();
+int name_requires_rep();
 
 typedef enum
 {
@@ -20,6 +21,10 @@ typedef enum
     CONV2D_FLOAT_3, // could change it to getopt_long but for now leave it as is
     CONV2D_FLOAT_5,
     // TODO: benchmark chaining API (how to specify which benchmarks to run?) special argument to choose their order?
+    // ideally add an option chain, which specifies how many times each op is performed, we do just single ops
+    CHAIN_ADD_FLOAT,
+    CHAIN_CONV2D_FLOAT_3,
+    CHAIN_CONV2D_FLOAT_5,
     NOOP,
 } EBenchmarkType;
 
@@ -30,18 +35,21 @@ typedef struct
 } benchmark_t;
 
 benchmark_t benchmark_types[] = {
-    { .name = "array_add_float", .type = ARRAY_ADD_FLOAT }, { .name = "array_add_fixed16", .type = ARRAY_ADD_FIXED16 },
-    { .name = "conv2d_float_3",  .type = CONV2D_FLOAT_3 },  { .name = "conv2d_float_5",    .type = CONV2D_FLOAT_5 },
-    { .name = "noop",            .type = NOOP },
+    { .name = "array_add_float",    .type = ARRAY_ADD_FLOAT },       { .name = "array_add_fixed16",    .type = ARRAY_ADD_FIXED16 },
+    { .name = "conv2d_float_3",     .type = CONV2D_FLOAT_3 },        { .name = "conv2d_float_5",       .type = CONV2D_FLOAT_5 },
+    { .name = "noop",               .type = NOOP },                  { .name = "ch_add_float",         .type = CHAIN_ADD_FLOAT},
+    { .name = "ch_conv2d_float_3",  .type = CHAIN_CONV2D_FLOAT_3 },  { .name = "ch_conv2d_float_5",    .type = CHAIN_CONV2D_FLOAT_5},
 };
-int benchmark_length = 5;
+int benchmark_length = 8;
 
 int HEIGHT, WIDTH;
+int REPETITIONS;
 char* NAME;
 EBenchmarkType TYPE;
 
 int main(int argc, char** argv)
 {
+    REPETITIONS = -1;
     srand((unsigned int)time(NULL));
 
     parse_args(argc, argv);
@@ -68,6 +76,15 @@ int main(int argc, char** argv)
         case NOOP:
             noop();
             break;
+        case CHAIN_ADD_FLOAT:
+            chain_add_float(REPETITIONS);
+            break;
+        case CHAIN_CONV2D_FLOAT_3:
+            chain_conv2d_float(REPETITIONS, 3);
+            break;
+        case CHAIN_CONV2D_FLOAT_5:
+            chain_conv2d_float(REPETITIONS, 5);
+            break;
         default:
             fprintf(stderr, "NOT IMPLEMENTED TYPE\n");
             exit(EXIT_FAILURE);
@@ -80,7 +97,7 @@ void parse_args(int argc, char** argv)
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "s:n:")) != -1)
+    while ((opt = getopt(argc, argv, "s:n:t:")) != -1)
     {
         switch (opt)
         {
@@ -102,8 +119,17 @@ void parse_args(int argc, char** argv)
                     exit(EXIT_FAILURE);
                 }
                 break;
+            case 't':
+                // this must come after the name, the NAME var is set already
+                REPETITIONS = strtol(optarg, NULL, 10);
+                if (name_requires_rep() != 0 || REPETITIONS <= 0)
+                {
+                    fprintf(stderr, "Only chain API requires this argument or invalid rep number\n");
+                    exit(EXIT_FAILURE);
+                }
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-s] [size] [-n] [benchmark_name]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-s] [size] [-n] [benchmark_name] [-t] [repetitions nr (for chain api)]\n", argv[0]);
                 print_benchmark_names();
                 exit(EXIT_FAILURE);
         }
@@ -136,6 +162,20 @@ int name_valid()
             break;
         }
     }
+    return ret;
+}
+
+int name_requires_rep()
+{
+    int ret = -1;
+
+    if (strcmp(NAME, "ch_add_float") == 0)
+        ret = 0;
+    else if (strcmp(NAME, "ch_conv2d_float_3") == 0)
+        ret = 0;
+    else if (strcmp(NAME, "ch_conv2d_float_5") == 0)
+        ret = 0;
+
     return ret;
 }
 

@@ -68,3 +68,4 @@ void main(void)
     float a1 = unpack(texel1 * 255.0);
     gl_FragColor = pack(a1 + scalar);
 }
+

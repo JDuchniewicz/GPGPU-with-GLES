@@ -523,7 +523,7 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
         // switch the textures to make previous output next input and so on
         if (i != len -1) // skip for last operation (TODO: will it work with double width operations? probably no!)
         {
-            printf("swapped\n"); // TODO: debug message
+            //printf("swapped\n"); // TODO: debug message
             gpgpu_copy_FBO_output();
         }
     }

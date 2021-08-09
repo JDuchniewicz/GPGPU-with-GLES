@@ -152,6 +152,66 @@ void conv2d_float(int size)
     free(res2);
 }
 
+void chain_add_float(int rep)
+{
+    clock_t start;
+    int gpu_time, cpu_time;
+
+    // create two float arrays
+    float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
+
+    generate_data_f(a1, a1);
+
+#if DEBUG
+    printf("Data before computation: \n");
+    print_data_f(a1);
+#endif
+
+    EOperation* ops = malloc(rep * sizeof(EOperation));
+    UOperationPayloadFloat* payload = malloc(rep * sizeof(UOperationPayloadFloat));
+
+    start = clock();
+    for (int i = 0; i < rep; ++i)
+    {
+        ops[i] = ADD_SCALAR_FLOAT;
+        payload[i].s = 2.0;
+    }
+    if (gpgpu_chain_apply_float(ops, payload, rep, a1, res) != 0)
+        printf("Could not do the array addition\n");
+
+    gpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after GPU addition: \n");
+    print_data_f(res);
+#endif
+
+    start = clock();
+    cpu_compute_chain_add_float(rep, 2.0, a1, res2);
+    cpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after CPU addition: \n");
+    print_data_f(res2);
+#endif
+
+    printf("GPU time %f CPU time %f\n", ((float)gpu_time / (float) CLOCKS_PER_SEC), ((float)cpu_time/ (float) CLOCKS_PER_SEC));
+
+    gpgpu_deinit();
+    free(a1);
+    free(res);
+    free(res2);
+    free(ops);
+    free(payload);
+}
+
+void chain_conv2d_float(int rep, int size)
+{
+
+}
+
 void cpu_compute_array_add_float(float* a1, float* a2, float* res)
 {
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
@@ -231,6 +291,15 @@ void cpu_compute_conv2d_float(float* a1, float* kernel, int size, float* res)
             }
             res[i * WIDTH + j] = tmp_res;
         }
+    }
+}
+
+void cpu_compute_chain_add_float(int rep, float scalar, float* a1, float* res2)
+{
+    for (int n = 0; n < rep; ++n)
+    {
+        for (int i = 0; i < WIDTH * HEIGHT; ++i)
+            res2[i] = a1[i] = a1[i] + scalar;
     }
 }
 
