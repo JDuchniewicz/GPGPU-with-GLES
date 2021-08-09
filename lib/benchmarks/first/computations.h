@@ -15,3 +15,5 @@ void print_data_f16(uint16_t* a);
 
 void cpu_compute_conv2d_float(float* a1, float* kernel, int size, float* res);
 void generate_data_conv2d_f(float* in1);
+
+void noop();

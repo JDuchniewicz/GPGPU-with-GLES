@@ -20,6 +20,7 @@ typedef enum
     CONV2D_FLOAT_3, // could change it to getopt_long but for now leave it as is
     CONV2D_FLOAT_5,
     // TODO: benchmark chaining API (how to specify which benchmarks to run?) special argument to choose their order?
+    NOOP,
 } EBenchmarkType;
 
 typedef struct
@@ -31,8 +32,9 @@ typedef struct
 benchmark_t benchmark_types[] = {
     { .name = "array_add_float", .type = ARRAY_ADD_FLOAT }, { .name = "array_add_fixed16", .type = ARRAY_ADD_FIXED16 },
     { .name = "conv2d_float_3",  .type = CONV2D_FLOAT_3 },  { .name = "conv2d_float_5",    .type = CONV2D_FLOAT_5 },
+    { .name = "noop",            .type = NOOP },
 };
-int benchmark_length = 4;
+int benchmark_length = 5;
 
 int HEIGHT, WIDTH;
 char* NAME;
@@ -62,6 +64,9 @@ int main(int argc, char** argv)
             break;
         case CONV2D_FLOAT_5:
             conv2d_float(5);
+            break;
+        case NOOP:
+            noop();
             break;
         default:
             fprintf(stderr, "NOT IMPLEMENTED TYPE\n");

@@ -13,6 +13,7 @@ typedef enum
     MAT_MULT_FLOAT,
     // chain operations
     CHAIN_ADD_SCALAR_FLOAT,
+    NOOP,
     NONE = -1,
 } EFragmentShader;
 
@@ -47,6 +48,7 @@ static const struct FFileName fFileNames[] = {
     { .type = MAT_MULT_FLOAT,                 .filename = "mat_mult_float.fs" },
     // chain operations
     { .type = CHAIN_ADD_SCALAR_FLOAT,         .filename = "../shaders/chain_add_scalar_float.fs" },
+    { .type = NOOP,                           .filename = "../shaders/noop.fs" },
 };
 
 int gpgpu_load_shaders(EVertexShader vertType, EFragmentShader fragType, GLchar** vSource, GLchar** fSource);

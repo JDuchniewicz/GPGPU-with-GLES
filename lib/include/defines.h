@@ -55,9 +55,11 @@ typedef struct
 	EGLConfig config;
 	EGLContext context;
     EGLSurface surface;
+#ifndef BEAGLE
     struct gbm_device* gbm;
     struct gbm_surface* gbm_surface;
     int32_t gbd_fd;
+#endif
     int height;
     int width;
 } GLHelper;

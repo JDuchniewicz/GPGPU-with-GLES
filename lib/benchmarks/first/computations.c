@@ -233,3 +233,48 @@ void cpu_compute_conv2d_float(float* a1, float* kernel, int size, float* res)
         }
     }
 }
+
+void noop()
+{
+    clock_t start;
+    int gpu_time, cpu_time;
+    // create two float arrays
+    float* a1 = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res2 = malloc(WIDTH * HEIGHT * sizeof(float));
+
+    generate_data_f(a1, a1);
+
+#if DEBUG
+    printf("Data before computation: \n");
+    print_data_f(a1);
+#endif
+
+    start = clock();
+    if (gpgpu_noop(a1, res) != 0)
+        printf("Could not do the array addition\n");
+
+    gpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after GPU addition: \n");
+    print_data_f(res);
+#endif
+
+    start = clock();
+    for (int i = 0; i < WIDTH * HEIGHT; ++i)
+        res2[i] = a1[i];
+    cpu_time = clock() - start;
+
+#if DEBUG
+    printf("Contents after CPU addition: \n");
+    print_data_f(res2);
+#endif
+
+    printf("GPU time %f CPU time %f\n", ((float)gpu_time / (float) CLOCKS_PER_SEC), ((float)cpu_time/ (float) CLOCKS_PER_SEC));
+
+    gpgpu_deinit();
+    free(a1);
+    free(res);
+    free(res2);
+}
