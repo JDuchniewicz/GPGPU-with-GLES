@@ -509,22 +509,42 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
     {
         switch(operations[i])
         {
+            /* scalars */
             case ADD_SCALAR_FLOAT:
                 if (gpgpu_chain_op_scalar_float(payload[i].s, ADD) != 0)
-                    ERR("Error calling chain add!");
+                    ERR("Error calling chain scalar add!");
                 break;
             case SUBTRACT_SCALAR_FLOAT:
                 if (gpgpu_chain_op_scalar_float(payload[i].s, SUBTRACT) != 0)
-                    ERR("Error calling chain subtract!");
+                    ERR("Error calling chain scalar subtract!");
                 break;
             case MULTIPLY_SCALAR_FLOAT:
                 if (gpgpu_chain_op_scalar_float(payload[i].s, MULTIPLY) != 0)
-                    ERR("Error calling chain multiply!");
+                    ERR("Error calling chain scalar multiply!");
                 break;
             case DIVIDE_SCALAR_FLOAT:
                 if (gpgpu_chain_op_scalar_float(payload[i].s, DIVIDE) != 0)
-                    ERR("Error calling chain divide!");
+                    ERR("Error calling chain scalar divide!");
                 break;
+            /* array */
+            case ADD_ARRAY_FLOAT:
+                if (gpgpu_chain_op_array_float(payload[i].arr, ADD) != 0)
+                    ERR("Error calling chain array add!");
+                break;
+            case SUBTRACT_ARRAY_FLOAT:
+                if (gpgpu_chain_op_array_float(payload[i].arr, SUBTRACT) != 0)
+                    ERR("Error calling chain array add!");
+                break;
+            case MULTIPLY_ARRAY_FLOAT:
+                if (gpgpu_chain_op_array_float(payload[i].arr, MULTIPLY) != 0)
+                    ERR("Error calling chain array add!");
+                break;
+            case DIVIDE_ARRAY_FLOAT:
+                if (gpgpu_chain_op_array_float(payload[i].arr, DIVIDE) != 0)
+                    ERR("Error calling chain array add!");
+                break;
+
+            /* convolutions */
             case FIR_CONV2D_FLOAT:
                 // consume two operation slots
                 if (gpgpu_chain_conv2d_float(payload[i].arr, payload[i + 1].n) != 0)
@@ -627,6 +647,58 @@ bail:
     return ret;
 }
 
+int GPGPU_API gpgpu_chain_op_array_float(float* arr, EArithmeticOperator op)
+{
+    int ret = 0;
+    if (g_helper.state != COMPUTING)
+        ERR("This can only be called via the chain_apply functions!");
+
+    gpgpu_make_texture(arr, g_helper.width, g_helper.height, &g_chainHelper.in_texId1);
+    switch (op) {
+        case ADD:
+            gpgpu_build_program(REGULAR, CHAIN_ADD_ARRAY_FLOAT);
+            break;
+        case SUBTRACT:
+            gpgpu_build_program(REGULAR, CHAIN_SUBTRACT_ARRAY_FLOAT);
+            break;
+        case MULTIPLY:
+            gpgpu_build_program(REGULAR, CHAIN_MULTIPLY_ARRAY_FLOAT);
+            break;
+        case DIVIDE:
+            //if (s == 0.0) // TODO: trust issues? check that whole array does not contain a 0 or enforce it on the user?
+            //    ERR("Cannot divide by 0!");
+            gpgpu_build_program(REGULAR, CHAIN_DIVIDE_ARRAY_FLOAT);
+            break;
+    }
+
+    GLuint geometry;
+    glGenBuffers(1, &geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.in_texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, g_chainHelper.in_texId1);
+    gpgpu_add_uniform("texture1", 1, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // now the currently bound out_texture contains the result
+bail:
+    return ret;
+
+}
 /* ADD OPS and maybe move to a different source file */
 
 int GPGPU_API gpgpu_chain_conv2d_float(float* kernel, int size)

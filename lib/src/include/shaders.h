@@ -16,6 +16,10 @@ typedef enum
     CHAIN_SUBTRACT_SCALAR_FLOAT,
     CHAIN_MULTIPLY_SCALAR_FLOAT,
     CHAIN_DIVIDE_SCALAR_FLOAT,
+    CHAIN_ADD_ARRAY_FLOAT,
+    CHAIN_SUBTRACT_ARRAY_FLOAT,
+    CHAIN_MULTIPLY_ARRAY_FLOAT,
+    CHAIN_DIVIDE_ARRAY_FLOAT,
     NOOP,
     NONE = -1,
 } EFragmentShader;
@@ -54,6 +58,10 @@ static const struct FFileName fFileNames[] = {
     { .type = CHAIN_SUBTRACT_SCALAR_FLOAT,    .filename = "../shaders/chain_subtract_scalar_float.fs" },
     { .type = CHAIN_MULTIPLY_SCALAR_FLOAT,    .filename = "../shaders/chain_multiply_scalar_float.fs" },
     { .type = CHAIN_DIVIDE_SCALAR_FLOAT,      .filename = "../shaders/chain_divide_scalar_float.fs" },
+    { .type = CHAIN_ADD_ARRAY_FLOAT,          .filename = "../shaders/chain_add_array_float.fs" },
+    { .type = CHAIN_SUBTRACT_ARRAY_FLOAT,     .filename = "../shaders/chain_subtract_array_float.fs" },
+    { .type = CHAIN_MULTIPLY_ARRAY_FLOAT,     .filename = "../shaders/chain_multiply_array_float.fs" },
+    { .type = CHAIN_DIVIDE_ARRAY_FLOAT,       .filename = "../shaders/chain_divide_array_float.fs" }, // TODO: question can we unify the regular shaders with the chain ones?
     { .type = NOOP,                           .filename = "../shaders/noop.fs" },
 };
 
