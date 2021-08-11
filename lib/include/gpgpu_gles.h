@@ -29,15 +29,9 @@ int GPGPU_API gpgpu_arrayAddition_fixed16(uint16_t* a1, uint16_t* a2, uint16_t* 
 int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadFloat* payload, int len, float* a1, float* res);
 int GPGPU_API gpgpu_chain_finish_float(float* res);
 
-// broadcast operations TODO: flesh out and extract common parts? enum of ops
-int GPGPU_API gpgpu_chain_add_scalar_float(float s);
-int GPGPU_API gpgpu_chain_sub_scalar_float(float s);
-int GPGPU_API gpgpu_chain_mul_scalar_float(float s);
-int GPGPU_API gpgpu_chain_div_scalar_float(float s);
+// broadcast operations
+int GPGPU_API gpgpu_chain_op_scalar_float(float s, EArithmeticOperator op);
 
-int GPGPU_API gpgpu_chain_add_array_float(float s);
-int GPGPU_API gpgpu_chain_sub_array_float(float s);
-int GPGPU_API gpgpu_chain_mul_array_float(float s);
-int GPGPU_API gpgpu_chain_div_array_float(float s);
+int GPGPU_API gpgpu_chain_op_array_float(float s, EArithmeticOperator op);
 
 int GPGPU_API gpgpu_chain_conv2d_float(float* kernel, int size);

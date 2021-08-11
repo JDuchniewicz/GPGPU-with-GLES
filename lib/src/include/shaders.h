@@ -13,6 +13,9 @@ typedef enum
     MAT_MULT_FLOAT,
     // chain operations
     CHAIN_ADD_SCALAR_FLOAT,
+    CHAIN_SUBTRACT_SCALAR_FLOAT,
+    CHAIN_MULTIPLY_SCALAR_FLOAT,
+    CHAIN_DIVIDE_SCALAR_FLOAT,
     NOOP,
     NONE = -1,
 } EFragmentShader;
@@ -48,6 +51,9 @@ static const struct FFileName fFileNames[] = {
     { .type = MAT_MULT_FLOAT,                 .filename = "mat_mult_float.fs" },
     // chain operations
     { .type = CHAIN_ADD_SCALAR_FLOAT,         .filename = "../shaders/chain_add_scalar_float.fs" },
+    { .type = CHAIN_SUBTRACT_SCALAR_FLOAT,    .filename = "../shaders/chain_subtract_scalar_float.fs" },
+    { .type = CHAIN_MULTIPLY_SCALAR_FLOAT,    .filename = "../shaders/chain_multiply_scalar_float.fs" },
+    { .type = CHAIN_DIVIDE_SCALAR_FLOAT,      .filename = "../shaders/chain_divide_scalar_float.fs" },
     { .type = NOOP,                           .filename = "../shaders/noop.fs" },
 };
 

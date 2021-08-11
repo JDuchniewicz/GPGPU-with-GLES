@@ -28,10 +28,23 @@ typedef enum
     // float
     // scalar
     ADD_SCALAR_FLOAT,
+    SUBTRACT_SCALAR_FLOAT,
+    MULTIPLY_SCALAR_FLOAT,
+    DIVIDE_SCALAR_FLOAT,
+
+    // array add
     // a x a
     //
     FIR_CONV2D_FLOAT,
 } EOperation;
+
+typedef enum
+{
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
+} EArithmeticOperator;
 
 typedef union
 {

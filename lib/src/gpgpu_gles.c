@@ -510,8 +510,20 @@ int GPGPU_API gpgpu_chain_apply_float(EOperation* operations, UOperationPayloadF
         switch(operations[i])
         {
             case ADD_SCALAR_FLOAT:
-                if (gpgpu_chain_add_scalar_float(payload[i].s) != 0)
-                    ERR("Error calling gpgpu_chain_add_scalar_float!");
+                if (gpgpu_chain_op_scalar_float(payload[i].s, ADD) != 0)
+                    ERR("Error calling chain add!");
+                break;
+            case SUBTRACT_SCALAR_FLOAT:
+                if (gpgpu_chain_op_scalar_float(payload[i].s, SUBTRACT) != 0)
+                    ERR("Error calling chain subtract!");
+                break;
+            case MULTIPLY_SCALAR_FLOAT:
+                if (gpgpu_chain_op_scalar_float(payload[i].s, MULTIPLY) != 0)
+                    ERR("Error calling chain multiply!");
+                break;
+            case DIVIDE_SCALAR_FLOAT:
+                if (gpgpu_chain_op_scalar_float(payload[i].s, DIVIDE) != 0)
+                    ERR("Error calling chain divide!");
                 break;
             case FIR_CONV2D_FLOAT:
                 // consume two operation slots
@@ -566,13 +578,28 @@ bail:
     return ret;
 }
 
-int GPGPU_API gpgpu_chain_add_scalar_float(float s)
+int GPGPU_API gpgpu_chain_op_scalar_float(float s, EArithmeticOperator op)
 {
     int ret = 0;
     if (g_helper.state != COMPUTING)
         ERR("This can only be called via the chain_apply functions!");
 
-    gpgpu_build_program(REGULAR, CHAIN_ADD_SCALAR_FLOAT);
+    switch (op) {
+        case ADD:
+            gpgpu_build_program(REGULAR, CHAIN_ADD_SCALAR_FLOAT);
+            break;
+        case SUBTRACT:
+            gpgpu_build_program(REGULAR, CHAIN_SUBTRACT_SCALAR_FLOAT);
+            break;
+        case MULTIPLY:
+            gpgpu_build_program(REGULAR, CHAIN_MULTIPLY_SCALAR_FLOAT);
+            break;
+        case DIVIDE:
+            if (s == 0.0)
+                ERR("Cannot divide by 0!");
+            gpgpu_build_program(REGULAR, CHAIN_DIVIDE_SCALAR_FLOAT);
+            break;
+    }
 
     GLuint geometry;
     glGenBuffers(1, &geometry);
