@@ -14,7 +14,7 @@ Motivation for the project was scarcity of heteregenousity on the BBB platform w
 
 Usually, one would simply use _compute shaders_ and just focus on writing efficient GPU computing code. However, we are limited with OpenGL ES version to 2.0 which does **not** support this kind of shaders. Therefore, we must do some _hacks_ and trick out GPU that we want to render something while we actually do just computations in our shaders.
 
-The targetted chip is SGX540 (on the BBB) and SGX544 (on the BBAI - TODO: yet untested).
+The targetted chip is SGX530 (on the BBB) and SGX544 (on the BBAI - TODO: yet untested).
 
 Support for other platforms should follow quite easily (BBB was target of this project therefore it is the preferred platform), assuming the system has some OpenGL ES and EGL libraries preinstalled and has the appropriate video devices (_/dev/dri/render*_).
 
@@ -36,7 +36,9 @@ In order to prepare your environment, you first need to install the BBB [image](
 
 You can also follow the steps listed [here](https://elinux.org/Beagleboard:BeagleBoneBlack_Debian#Flashing_eMMC) to move the system to on-board eMMC.
 
-#### Install prerequisites
+_You can run below commands either on the host or the target depending on where you want to run the library._
+
+#### Install prerequisites (on the target board)
 `sudo apt update && sudo apt install cmake`
 
 ## Clone and build the repository
