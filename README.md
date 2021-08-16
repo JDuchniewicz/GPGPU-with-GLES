@@ -52,6 +52,10 @@ Run the cmake command:
 
 `cmake ..`
 
+_If running on your host, you need to specify EGL and OpenGL ES libraries directories:_
+
+`cmake .. -DEGL_INCLUDE_DIR=/usr/include/ -DGLES2_INCLUDE_DIR=/usr/include`
+
 Finally, build it:
 
 `make`
