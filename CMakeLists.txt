@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.7)
 project(GPGPU_GLES VERSION 1.0.0 LANGUAGES C)
 
 # Add the custom modules to CMake search path
@@ -22,11 +22,10 @@ add_library(GPGPU_GLES STATIC
 )
 
 if(CMAKE_HOST_SYSTEM_VERSION MATCHES ".*-ti-.*")
-    add_compile_definitions(BEAGLE)
+	target_compile_options(GPGPU_GLES PRIVATE -O3 -DBEAGLE)
+else()
+	target_compile_options(GPGPU_GLES PRIVATE -O3)
 endif()
-
-# add C flags
-target_compile_options(GPGPU_GLES PRIVATE -O3)
 
 # add alias to use it as GPGPU_GLES::GPGPU_GLES
 add_library(GPGPU_GLES::GPGPU_GLES ALIAS GPGPU_GLES)
