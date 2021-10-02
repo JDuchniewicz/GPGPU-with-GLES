@@ -48,7 +48,7 @@ Clone the repository:
 
 Create the build folder and enter it:
 
-`mkdir GPGPU-with-GLES/lib/build && cd GPGPU-with-GLES/lib/build`
+`mkdir GPGPU-with-GLES/cmake-build && cd GPGPU-with-GLES/cmake-build`
 
 Run the cmake command:
 
