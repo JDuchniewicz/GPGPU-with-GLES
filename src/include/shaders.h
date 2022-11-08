@@ -10,7 +10,7 @@ typedef enum
     FIR_CONV2D_FLOAT_5,
     FIR_CONV2D_FLOAT_BBB_3, // special unrolled version for SGX
     FIR_CONV2D_FLOAT_BBB_5,
-    MAT_MULT_FLOAT,
+    MULT_MAT_INT,
     // chain operations
     CHAIN_ADD_SCALAR_FLOAT,
     CHAIN_SUBTRACT_SCALAR_FLOAT,
@@ -52,7 +52,7 @@ static const struct FFileName fFileNames[] = {
     { .type = FIR_CONV2D_FLOAT_5,             .filename = "../shaders/fir_conv2d_float_5.fs" },
     { .type = FIR_CONV2D_FLOAT_BBB_3,         .filename = "../shaders/fir_conv2d_float_bbb_3.fs" },
     { .type = FIR_CONV2D_FLOAT_BBB_5,         .filename = "../shaders/fir_conv2d_float_bbb_5.fs" },
-    { .type = MAT_MULT_FLOAT,                 .filename = "mat_mult_float.fs" },
+    { .type = MULT_MAT_INT,                   .filename = "../shaders/mult_mat_int.fs" },
     // chain operations
     { .type = CHAIN_ADD_SCALAR_FLOAT,         .filename = "../shaders/chain_add_scalar_float.fs" },
     { .type = CHAIN_SUBTRACT_SCALAR_FLOAT,    .filename = "../shaders/chain_subtract_scalar_float.fs" },

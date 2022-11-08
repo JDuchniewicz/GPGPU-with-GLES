@@ -36,6 +36,7 @@ typedef enum
     SUBTRACT_ARRAY_FLOAT,
     MULTIPLY_ARRAY_FLOAT,
     DIVIDE_ARRAY_FLOAT,
+    MAT_MULT_INT,
     // a x a
     //
     FIR_CONV2D_FLOAT,
