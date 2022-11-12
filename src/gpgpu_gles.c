@@ -318,7 +318,7 @@ bail:
     return ret;
 }
 
-int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
+int GPGPU_API gpgpu_matrixMultiplication(float* a, float* b, int size, float* res)
 {
     int ret = 0;
     if (g_helper.state != READY) // TODO: probably no need to set the states in single-shot API
