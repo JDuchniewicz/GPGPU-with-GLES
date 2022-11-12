@@ -16,7 +16,7 @@ int GPGPU_API gpgpu_deinit();
 // FLOAT FUNCTIONS
 int GPGPU_API gpgpu_arrayAddition(float* a1, float* a2, float* res);
 int GPGPU_API gpgpu_firConvolution2D(float* data, float* kernel, int size, float* res);
-int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res);
+int GPGPU_API gpgpu_matrixMultiplication(float* a, float* b, int size, float* res);
 // noop
 int GPGPU_API gpgpu_noop(float* a1, float* res);
 
