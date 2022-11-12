@@ -13,9 +13,9 @@ int main()
     }
 
     // create two float arrays
-    int* a = malloc(WIDTH * HEIGHT * sizeof(float));
-    int* b = malloc(WIDTH * HEIGHT * sizeof(float));
-    int* res = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* a = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* b = malloc(WIDTH * HEIGHT * sizeof(float));
+    float* res = malloc(WIDTH * HEIGHT * sizeof(float));
 
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
@@ -25,7 +25,7 @@ int main()
     printf("Data before computation: \n");
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
-        printf("%d ", a[i]);
+        printf("%f ", a[i]);
         if ((i + 1) % WIDTH == 0)
             printf("\n");
     }
@@ -37,7 +37,7 @@ int main()
     printf("Contents after multiplication: \n");
     for (int i = 0; i < WIDTH * HEIGHT; ++i)
     {
-        printf("%d ", res[i]);
+        printf("%f ", res[i]);
         if ((i + 1) % WIDTH == 0)
             printf("\n");
     }
