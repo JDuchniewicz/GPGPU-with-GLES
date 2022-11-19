@@ -50,6 +50,10 @@ Create the build folder and enter it:
 
 `mkdir GPGPU-with-GLES/cmake-build && cd GPGPU-with-GLES/cmake-build`
 
+Install the gbm library:
+
+`sudo apt-get install libgbm-dev`
+
 Run the cmake command:
 
 `cmake ..`
