@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include <fcntl.h>
-#include <gbm/gbm.h>
+#include <gbm.h>
 
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
@@ -36,6 +36,7 @@ typedef enum
     SUBTRACT_ARRAY_FLOAT,
     MULTIPLY_ARRAY_FLOAT,
     DIVIDE_ARRAY_FLOAT,
+    MAT_MULT_INT,
     // a x a
     //
     FIR_CONV2D_FLOAT,

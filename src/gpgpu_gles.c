@@ -318,10 +318,100 @@ bail:
     return ret;
 }
 
-int GPGPU_API gpgpu_matrixMultiplication(int* a, int* b, int size, int* res)
+int GPGPU_API gpgpu_matrixMultiplication(float* a, float* b, int size, float* res)
 {
+    int ret = 0;
+    if (g_helper.state != READY) // TODO: probably no need to set the states in single-shot API
+        ERR("Call gpgpu_init() first!");
 
-    return 0;
+    unsigned char* buffer = malloc(4 * g_helper.width * g_helper.height);
+    GLuint texId0, texId1;
+    gpgpu_make_texture(a, g_helper.width, g_helper.height, &texId0);
+    gpgpu_make_texture(b, g_helper.width, g_helper.height, &texId1);
+
+#if DEBUG
+    printf("RAW contents before addition: \n");
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
+    {
+        printf("%d ", *((unsigned char*)a1 + i));
+        if ((i + 1)  % (4 * g_helper.width) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // inputs are float textures, output is a vec4 of unsigned bytes representing the float result of one texel
+    // we need to extract the bits following the IEEE754 floating point format because GLES 2.0 does not have bit extraction
+    gpgpu_build_program(REGULAR, MULT_MAT_FLOAT);
+
+    // create the geometry to draw the texture on
+    GLuint geometry; 
+    // GLuint VAO, EBO;
+    glGenBuffers(1, &geometry);
+    // glGenVertexArrays(1, &VAO);
+    // glGenBuffers(1, &EBO);
+    // glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry);
+    glBufferData(GL_ARRAY_BUFFER, 20*sizeof(float), gpgpu_geometry, GL_STATIC_DRAW);
+    // glBindBuffer(GL_ARRAY_BUFFER, EBO);
+    // glBufferData(GL_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
+
+    // setup the vertex position as the attribute of vertex shader
+    gpgpu_add_attribute("position", 3, 20, 0);
+    gpgpu_add_attribute("texCoord", 2, 20, 3);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(0);
+    // do the actual computation
+    // bind textures to their respective texturing units
+    // add texture uniforms to fragment shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId0);
+    gpgpu_add_uniform("texture0", 0, "uniform1i");
+
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, texId1);
+    gpgpu_add_uniform("texture1", 1, "uniform1i");
+
+    // glActiveTexture(GL_TEXTURE0);
+    // int fbo = gpgpu_make_FBO();
+    // printf("%d", fbo);
+
+    if (gpgpu_report_glError(glGetError()) != 0)
+        ERR("Could not prepare textures");
+
+    // finally draw it
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    //////////
+    // magic happens and the data is now ready
+    // poof!
+    //////////
+
+    glReadPixels(0, 0, g_helper.width, g_helper.height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    // convert from unsigned bytes back to the original format (float?)
+
+#if DEBUG
+    printf("RAW contents after addition: \n");
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; ++i)
+    {
+        printf("%d ", buffer[i]);
+        if ((i + 1)  % (4 * g_helper.width) == 0)
+            printf("\n");
+    }
+    printf("\n");
+#endif
+
+    // copy the bytes as floats
+    for (int i = 0; i < 4 * g_helper.width * g_helper.height; i += 4)
+    {
+        res[i / 4] = *((float*)buffer + i / 4);
+    }
+
+bail:
+    // TODO: what should be released upon failure?
+    if (buffer)
+        free(buffer);
+    return ret;
 }
 
 int GPGPU_API gpgpu_noop(float* a1, float* res)
