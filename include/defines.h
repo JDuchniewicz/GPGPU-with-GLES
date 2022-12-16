@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include <fcntl.h>
-#include <gbm/gbm.h>
+#include <gbm.h>
 
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES

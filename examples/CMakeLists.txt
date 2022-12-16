@@ -2,7 +2,7 @@ set(GPGPU_GLES_EXAMPLES
     array_add_float
     fir_conv_float
     array_add_fixed16
-    mult_mat_int
+    mult_mat_float
     # chain API
     chain_simple_float
     chain_conv2d_float

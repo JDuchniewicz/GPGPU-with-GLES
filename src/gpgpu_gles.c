@@ -342,7 +342,7 @@ int GPGPU_API gpgpu_matrixMultiplication(float* a, float* b, int size, float* re
 
     // inputs are float textures, output is a vec4 of unsigned bytes representing the float result of one texel
     // we need to extract the bits following the IEEE754 floating point format because GLES 2.0 does not have bit extraction
-    gpgpu_build_program(REGULAR, MULT_MAT_INT);
+    gpgpu_build_program(REGULAR, MULT_MAT_FLOAT);
 
     // create the geometry to draw the texture on
     GLuint geometry; 
